@@ -8,13 +8,17 @@ use App\Modules\Currency\Domain\Currency as DomainCurrency;
 use App\Modules\Product\Domain\Product as DomainProduct;
 use App\Modules\Product\Domain\ProductPrice as DomainProductPrice;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
+use App\Modules\Product\Infrastructure\Persistence\Eloquent\Filters\ProductEloquentFilter;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\Product as EloquentProduct;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice as EloquentProductPrice;
-
 use Illuminate\Support\Facades\DB;
 
 final class EloquentProductRepository implements ProductRepositoryInterface
 {
+    public function __construct(
+        private readonly ProductEloquentFilter $filter = new ProductEloquentFilter(),
+    ) {
+    }
     public function save(DomainProduct $product): DomainProduct
     {
         return DB::transaction(function () use ($product): DomainProduct {
@@ -75,18 +79,11 @@ final class EloquentProductRepository implements ProductRepositoryInterface
         int $perPage = 15,
         int $page = 1
     ): array {
-        $builder = EloquentProduct::query()
-            ->with(['currency', 'prices.currency'])
-            ->when($query !== null && trim($query) !== '', function ($builder) use ($query): void {
-                $term = '%'.trim($query).'%';
-                $builder->where('name', 'like', $term);
-            })
-            ->when($currencyId !== null, fn ($b) => $b->where('currency_id', $currencyId))
-            ->when($minPrice !== null, fn ($b) => $b->where('price', '>=', $minPrice))
-            ->when($maxPrice !== null, fn ($b) => $b->where('price', '<=', $maxPrice))
-            ->orderByDesc('id');
+        $builder = EloquentProduct::query()->with(['currency', 'prices.currency']);
 
-        $paginator = $builder->paginate($perPage, ['*'], 'page', $page);
+        $this->filter->apply($builder, $query, $currencyId, $minPrice, $maxPrice);
+
+        $paginator = $builder->orderByDesc('id')->paginate($perPage, ['*'], 'page', $page);
 
         $items = collect($paginator->items())
             ->map(fn (EloquentProduct $p) => $this->toDomain($p))
