@@ -134,6 +134,18 @@
         "mimeType": "application/json",
         "text": "{\n  \"currency_id\": 2,\n  \"price\": 735.00\n}"
       }
+    },
+    {
+      "_id": "req_list_currencies",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Currencies - List Currencies",
+      "method": "GET",
+      "url": "{{ _.base_url }}/currencies?q=",
+      "headers": [
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
     }
   ]
 }

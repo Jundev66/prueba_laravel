@@ -6,7 +6,9 @@ namespace App\Modules\Currency\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Currency\Application\SearchAll\CurrenciesSearcher;
+use App\Modules\Currency\Application\SearchAll\SearchCurrenciesQuery;
 use App\Modules\Currency\Infrastructure\Http\Resources\CurrencyResource;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
 
@@ -23,6 +25,15 @@ final class ListCurrenciesController extends Controller
         description: 'Returns the catalogue of currencies (e.g. USD, EUR, VES) and their exchange rates against base currency.',
         tags: ['Currencies'],
         security: [['bearerAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'q',
+                in: 'query',
+                description: 'Search keyword matching currency name',
+                required: false,
+                schema: new OA\Schema(type: 'string', example: 'Dollar')
+            ),
+        ],
         responses: [
             new OA\Response(
                 response: 200,
@@ -42,9 +53,11 @@ final class ListCurrenciesController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
-    public function __invoke(): AnonymousResourceCollection
+    public function __invoke(Request $request): AnonymousResourceCollection
     {
-        $currencies = ($this->searcher)();
+        $query = $request->query('q') !== null ? (string) $request->query('q') : null;
+
+        $currencies = ($this->searcher)(new SearchCurrenciesQuery($query));
 
         return CurrencyResource::collection($currencies);
     }

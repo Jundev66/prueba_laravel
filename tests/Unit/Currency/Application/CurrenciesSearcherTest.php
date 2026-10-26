@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Currency\Application;
 
 use App\Modules\Currency\Application\SearchAll\CurrenciesSearcher;
+use App\Modules\Currency\Application\SearchAll\SearchCurrenciesQuery;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -22,10 +23,11 @@ final class CurrenciesSearcherTest extends TestCase
         $currencyRepo = Mockery::mock(CurrencyRepositoryInterface::class);
         $currencyRepo->shouldReceive('searchAll')
             ->once()
+            ->with('Dollar')
             ->andReturn($currencies);
 
         $searcher = new CurrenciesSearcher($currencyRepo);
-        $result = $searcher();
+        $result = $searcher(new SearchCurrenciesQuery('Dollar'));
 
         $this->assertSame($currencies, $result);
         $this->assertCount(2, $result);

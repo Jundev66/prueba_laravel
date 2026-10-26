@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Modules\Auth\Domain\Exceptions\InvalidCredentialsException;
 use App\Modules\Auth\Domain\Exceptions\TooManyLoginAttemptsException;
 use App\Modules\Currency\Domain\Exceptions\CurrencyNotFoundException;
+use App\Modules\Currency\Domain\Exceptions\InvalidCurrencyAttributeException;
 use App\Modules\Product\Domain\Exceptions\BaseCurrencyCannotBeSecondaryException;
 use App\Modules\Product\Domain\Exceptions\CurrencyAlreadyAssignedException;
 use App\Modules\Product\Domain\Exceptions\InvalidProductAttributeException;
@@ -57,6 +58,15 @@ return Application::configure(basePath: dirname(__DIR__))
                     'message' => $e->getMessage(),
                 ],
             ], 404);
+        });
+
+        $exceptions->render(function (InvalidCurrencyAttributeException $e): JsonResponse {
+            return response()->json([
+                'error' => [
+                    'code' => 'INVALID_CURRENCY_ATTRIBUTE',
+                    'message' => $e->getMessage(),
+                ],
+            ], 422);
         });
 
         $exceptions->render(function (CurrencyAlreadyAssignedException $e): JsonResponse {

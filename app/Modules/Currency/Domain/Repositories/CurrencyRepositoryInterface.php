@@ -11,7 +11,7 @@ interface CurrencyRepositoryInterface
     /**
      * @return Currency[]
      */
-    public function searchAll(): array;
+    public function searchAll(?string $query = null): array;
 
     public function search(int $id): ?Currency;
 

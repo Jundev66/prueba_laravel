@@ -63,4 +63,14 @@ final class CurrencyApiTest extends TestCase
             ->assertJsonPath('data.2.name', 'Bolivar')
             ->assertJsonPath('data.2.symbol', 'Bs.');
     }
+
+    public function test_it_filters_currencies_by_search_keyword(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/currencies?q=Dollar');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'US Dollar');
+    }
 }

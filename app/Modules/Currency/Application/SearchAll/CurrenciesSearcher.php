@@ -17,8 +17,8 @@ final readonly class CurrenciesSearcher
     /**
      * @return Currency[]
      */
-    public function __invoke(): array
+    public function __invoke(SearchCurrenciesQuery $query): array
     {
-        return $this->repository->searchAll();
+        return $this->repository->searchAll($query->query());
     }
 }

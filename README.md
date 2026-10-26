@@ -29,14 +29,15 @@ app/
 │   │   │
 │   │   └── Infrastructure/
 │   │       ├── Persistence/Eloquent/        # Eloquent adapters translating Domain Entities <-> Database
+│   │       │   ├── Filters/                 # Dedicated query filters (ProductEloquentFilter)
 │   │       │   ├── Models/                  # Product & ProductPrice Eloquent models
 │   │       │   └── Repositories/            # EloquentProductRepository, EloquentProductPriceRepository
 │   │       └── Http/                        # Single Action Controllers (__invoke), FormRequests, Resources
 │   │
 │   ├── Currency/
 │   │   ├── Domain/                          # Currency Domain Entity with getters & CurrencyRepositoryInterface
-│   │   ├── Application/SearchAll/           # CurrenciesSearcher Use Case
-│   │   └── Infrastructure/                  # Eloquent adapter & ListCurrenciesController
+│   │   ├── Application/SearchAll/           # CurrenciesSearcher Use Case & SearchCurrenciesQuery DTO
+│   │   └── Infrastructure/                  # CurrencyEloquentFilter, Eloquent adapter & ListCurrenciesController
 │   │
 │   └── Auth/                                # Sanctum Bearer token authentication
 │
@@ -134,8 +135,8 @@ test-token-backend-senior-2026
 |---|---|---|---|
 | `POST` | `/api/v1/auth/login` | Authenticate and retrieve Bearer token | No |
 | `POST` | `/api/v1/auth/logout` | Revoke current Bearer token | Yes |
-| `GET` | `/api/v1/currencies` | List supported currencies and exchange rates | Yes |
-| `GET` | `/api/v1/products` | Paginated catalog list with gross margin | Yes |
+| `GET` | `/api/v1/currencies?q={name}` | List supported currencies (optional name filter) | Yes |
+| `GET` | `/api/v1/products?q={name}&currency_id={id}&min_price={min}&max_price={max}` | Paginated catalog list with filters & gross margin | Yes |
 | `POST` | `/api/v1/products` | Create product with base currency | Yes |
 | `GET` | `/api/v1/products/{id}` | Retrieve product details | Yes |
 | `PUT` | `/api/v1/products/{id}` | Update product attributes | Yes |

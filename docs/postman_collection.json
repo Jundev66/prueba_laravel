@@ -236,6 +236,35 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "Currencies",
+			"item": [
+				{
+					"name": "List Currencies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/currencies?q=",
+							"host": ["{{base_url}}"],
+							"path": ["currencies"],
+							"query": [
+								{
+									"key": "q",
+									"value": "",
+									"description": "Optional search keyword for currency name (e.g. Dollar, Euro)"
+								}
+							]
+						}
+					}
+				}
+			]
 		}
 	]
 }

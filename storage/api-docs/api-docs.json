@@ -138,6 +138,18 @@
                 "summary": "Get list of all supported currencies with exchange rates",
                 "description": "Returns the catalogue of currencies (e.g. USD, EUR, VES) and their exchange rates against base currency.",
                 "operationId": "7cd5633e954aa0521d64ceabacdcf3fa",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Search keyword matching currency name",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Dollar"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "List of currencies retrieved successfully",

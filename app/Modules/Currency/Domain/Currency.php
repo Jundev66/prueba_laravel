@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Currency\Domain;
 
+use App\Modules\Currency\Domain\Exceptions\InvalidCurrencyAttributeException;
+
 final class Currency
 {
     private function __construct(
@@ -16,6 +18,10 @@ final class Currency
 
     public static function create(int $id, string $name, string $symbol, float $exchangeRate): self
     {
+        self::guardName($name);
+        self::guardSymbol($symbol);
+        self::guardExchangeRate($exchangeRate);
+
         return new self($id, $name, $symbol, $exchangeRate);
     }
 
@@ -57,5 +63,26 @@ final class Currency
             'symbol' => $this->symbol,
             'exchange_rate' => $this->exchangeRate,
         ];
+    }
+
+    private static function guardName(string $name): void
+    {
+        if (trim($name) === '') {
+            throw InvalidCurrencyAttributeException::emptyName();
+        }
+    }
+
+    private static function guardSymbol(string $symbol): void
+    {
+        if (trim($symbol) === '') {
+            throw InvalidCurrencyAttributeException::emptySymbol();
+        }
+    }
+
+    private static function guardExchangeRate(float $rate): void
+    {
+        if ($rate <= 0.0) {
+            throw InvalidCurrencyAttributeException::invalidRate($rate);
+        }
     }
 }
