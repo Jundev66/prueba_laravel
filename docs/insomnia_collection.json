@@ -1,0 +1,139 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-10-26T04:24:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_products_api",
+      "_type": "workspace",
+      "name": "Products & Multi-Currency API",
+      "description": "Hexagonal Architecture REST API"
+    },
+    {
+      "_id": "env_products_api",
+      "_type": "environment",
+      "parentId": "wrk_products_api",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8000/api/v1",
+        "token": "test-token-backend-senior-2026"
+      }
+    },
+    {
+      "_id": "req_login",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Auth - Login",
+      "method": "POST",
+      "url": "{{ _.base_url }}/auth/login",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+      }
+    },
+    {
+      "_id": "req_list_products",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Products - List Products",
+      "method": "GET",
+      "url": "{{ _.base_url }}/products?per_page=15",
+      "headers": [
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_create_product",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Products - Create Product",
+      "method": "POST",
+      "url": "{{ _.base_url }}/products",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Smart Watch Ultra\",\n  \"description\": \"Titanium case\",\n  \"price\": 799.00,\n  \"currency_id\": 1,\n  \"tax_cost\": 127.84,\n  \"manufacturing_cost\": 350.00\n}"
+      }
+    },
+    {
+      "_id": "req_get_product",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Products - Get Product by ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/products/1",
+      "headers": [
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_update_product",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Products - Update Product",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/products/1",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Laptop Pro 16 M3 Max\",\n  \"price\": 1650.00\n}"
+      }
+    },
+    {
+      "_id": "req_delete_product",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Products - Delete Product",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/products/2",
+      "headers": [
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_list_prices",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Product Prices - List Prices",
+      "method": "GET",
+      "url": "{{ _.base_url }}/products/1/prices",
+      "headers": [
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ]
+    },
+    {
+      "_id": "req_assign_price",
+      "_type": "request",
+      "parentId": "wrk_products_api",
+      "name": "Product Prices - Assign Price",
+      "method": "POST",
+      "url": "{{ _.base_url }}/products/1/prices",
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" },
+        { "name": "Accept", "value": "application/json" },
+        { "name": "Authorization", "value": "Bearer {{ _.token }}" }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"currency_id\": 2,\n  \"price\": 735.00\n}"
+      }
+    }
+  ]
+}
