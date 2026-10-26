@@ -15,6 +15,7 @@ use App\Modules\Product\Domain\ProductPrice;
 use App\Modules\Product\Domain\Repositories\ProductPriceRepositoryInterface;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\CurrencyMother;
 use Tests\Unit\Product\Mothers\ProductMother;
@@ -22,11 +23,7 @@ use Tests\Unit\Product\Mothers\ProductPriceMother;
 
 final class ProductPriceAssignerTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_assigns_secondary_currency_price_successfully(): void
     {
@@ -41,14 +38,17 @@ final class ProductPriceAssignerTest extends TestCase
         $productRepo->shouldReceive('search')->once()->with(1)->andReturn($product);
         $currencyRepo->shouldReceive('search')->once()->with(2)->andReturn($currencyEur);
         $priceRepo->shouldReceive('searchByProductAndCurrency')->once()->with(1, 2)->andReturn(null);
-        $priceRepo->shouldReceive('save')->once()->with(Mockery::type(ProductPrice::class))->andReturn($expectedPrice);
+        $priceRepo->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(function (ProductPrice $price): bool {
+                return $price->productId() === 1
+                    && $price->currencyId() === 2
+                    && $price->price() === 1100.00;
+            }))
+            ->andReturn($expectedPrice);
 
         $assigner = new ProductPriceAssigner($productRepo, $priceRepo, $currencyRepo);
-        $result = $assigner(new AssignProductPriceRequest(productId: 1, currencyId: 2, price: 1100.00));
-
-        $this->assertSame($expectedPrice, $result);
-        $this->assertSame(1100.00, $result->price());
-        $this->assertSame(2, $result->currencyId());
+        $assigner(new AssignProductPriceRequest(productId: 1, currencyId: 2, price: 1100.00));
     }
 
     public function test_it_throws_when_currency_is_same_as_product_base_currency(): void

@@ -5,18 +5,16 @@ declare(strict_types=1);
 namespace Tests\Unit\Product\Application;
 
 use App\Modules\Product\Application\SearchAll\ProductsSearcher;
+use App\Modules\Product\Application\SearchAll\SearchProductsQuery;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\ProductMother;
 
 final class ProductsSearcherTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_searches_paginated_products(): void
     {
@@ -36,7 +34,7 @@ final class ProductsSearcherTest extends TestCase
             ->andReturn($expectedResult);
 
         $searcher = new ProductsSearcher($productRepo);
-        $result = $searcher(15, 1);
+        $result = $searcher(new SearchProductsQuery(15, 1));
 
         $this->assertSame($expectedResult, $result);
         $this->assertCount(1, $result['items']);

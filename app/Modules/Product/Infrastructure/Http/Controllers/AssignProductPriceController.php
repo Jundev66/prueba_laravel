@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\AssignPrice\AssignProductPriceRequest;
 use App\Modules\Product\Application\AssignPrice\ProductPriceAssigner;
 use App\Modules\Product\Infrastructure\Http\Requests\StoreProductPriceRequest;
-use App\Modules\Product\Infrastructure\Http\Resources\ProductPriceResource;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
@@ -54,7 +53,15 @@ final class AssignProductPriceController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Price assigned successfully'),
+            new OA\Response(
+                response: 201,
+                description: 'Price assigned successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Product price assigned successfully.'),
+                    ]
+                )
+            ),
             new OA\Response(response: 404, description: 'Product or currency not found'),
             new OA\Response(response: 422, description: 'Validation error, currency already assigned, or base currency clash'),
             new OA\Response(response: 401, description: 'Unauthenticated'),
@@ -70,10 +77,10 @@ final class AssignProductPriceController extends Controller
             price: (float) $validated['price']
         );
 
-        $price = ($this->assigner)($command);
+        ($this->assigner)($command);
 
-        return (new ProductPriceResource($price))
-            ->response()
-            ->setStatusCode(201);
+        return response()->json([
+            'message' => 'Product price assigned successfully.',
+        ], 201);
     }
 }

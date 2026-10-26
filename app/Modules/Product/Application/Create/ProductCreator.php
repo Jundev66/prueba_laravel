@@ -17,7 +17,7 @@ final readonly class ProductCreator
     ) {
     }
 
-    public function __invoke(CreateProductRequest $request): Product
+    public function __invoke(CreateProductRequest $request): void
     {
         $currency = $this->currencyRepository->search($request->currencyId());
 
@@ -36,6 +36,6 @@ final readonly class ProductCreator
             currency: $currency,
         );
 
-        return $this->productRepository->save($product);
+        $this->productRepository->save($product);
     }
 }

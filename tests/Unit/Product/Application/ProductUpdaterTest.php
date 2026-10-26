@@ -12,16 +12,13 @@ use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Product\Domain\Product;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\ProductMother;
 
 final class ProductUpdaterTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_updates_product_attributes_successfully(): void
     {
@@ -31,13 +28,16 @@ final class ProductUpdaterTest extends TestCase
         $currencyRepo = Mockery::mock(CurrencyRepositoryInterface::class);
 
         $productRepo->shouldReceive('search')->once()->with(1)->andReturn($product);
-        $productRepo->shouldReceive('save')->once()->with(Mockery::type(Product::class))->andReturn($product);
+        $productRepo->shouldReceive('save')
+            ->once()
+            ->with(Mockery::on(function (Product $updated): bool {
+                return $updated->name() === 'Renamed Laptop'
+                    && $updated->price() === 1350.00;
+            }))
+            ->andReturn($product);
 
         $updater = new ProductUpdater($productRepo, $currencyRepo);
-        $result = $updater(new UpdateProductRequest(id: 1, name: 'Renamed Laptop', price: 1350.00));
-
-        $this->assertSame('Renamed Laptop', $result->name());
-        $this->assertSame(1350.00, $result->price());
+        $updater(new UpdateProductRequest(id: 1, name: 'Renamed Laptop', price: 1350.00));
     }
 
     public function test_it_throws_when_updating_non_existent_product(): void

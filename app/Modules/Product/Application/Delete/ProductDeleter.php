@@ -14,14 +14,14 @@ final readonly class ProductDeleter
     ) {
     }
 
-    public function __invoke(int $id): bool
+    public function __invoke(DeleteProductCommand $command): void
     {
-        $product = $this->productRepository->search($id);
+        $product = $this->productRepository->search($command->id());
 
         if ($product === null) {
-            throw new ProductNotFoundException($id);
+            throw new ProductNotFoundException($command->id());
         }
 
-        return $this->productRepository->delete($id);
+        $this->productRepository->delete($command->id());
     }
 }

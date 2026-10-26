@@ -15,12 +15,12 @@ final readonly class ProductFinder
     ) {
     }
 
-    public function __invoke(int $id): Product
+    public function __invoke(FindProductQuery $query): Product
     {
-        $product = $this->productRepository->search($id);
+        $product = $this->productRepository->search($query->id());
 
         if ($product === null) {
-            throw new ProductNotFoundException($id);
+            throw new ProductNotFoundException($query->id());
         }
 
         return $product;

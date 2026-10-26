@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Product\Application\Find\FindProductQuery;
 use App\Modules\Product\Application\Find\ProductFinder;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use OpenApi\Attributes as OA;
@@ -37,7 +38,7 @@ final class GetProductController extends Controller
     )]
     public function __invoke(int $id): ProductResource
     {
-        $product = ($this->finder)($id);
+        $product = ($this->finder)(new FindProductQuery($id));
 
         return new ProductResource($product);
     }

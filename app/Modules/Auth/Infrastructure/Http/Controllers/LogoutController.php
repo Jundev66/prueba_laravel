@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Auth\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Auth\Application\Logout\RevokeUserTokenCommand;
 use App\Modules\Auth\Application\Logout\UserTokenRevoker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ final class LogoutController extends Controller
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        ($this->revoker)($request->user());
+        ($this->revoker)(new RevokeUserTokenCommand($request->user()));
 
         return response()->json([
             'message' => 'Token revoked successfully.',

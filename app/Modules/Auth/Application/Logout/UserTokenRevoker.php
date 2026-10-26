@@ -8,8 +8,8 @@ use App\Models\User;
 
 final readonly class UserTokenRevoker
 {
-    public function __invoke(?User $user): void
+    public function __invoke(RevokeUserTokenCommand $command): void
     {
-        $user?->currentAccessToken()?->delete();
+        $command->user()?->currentAccessToken()?->delete();
     }
 }

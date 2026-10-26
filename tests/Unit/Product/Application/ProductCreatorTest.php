@@ -11,17 +11,14 @@ use App\Modules\Product\Application\Create\ProductCreator;
 use App\Modules\Product\Domain\Product;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\CurrencyMother;
 use Tests\Unit\Product\Mothers\ProductMother;
 
 final class ProductCreatorTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_creates_product_successfully_when_currency_exists(): void
     {
@@ -38,7 +35,12 @@ final class ProductCreatorTest extends TestCase
 
         $productRepository->shouldReceive('save')
             ->once()
-            ->with(Mockery::type(Product::class))
+            ->with(Mockery::on(function (Product $product): bool {
+                return $product->name() === 'Test Laptop'
+                    && $product->price() === 1200.00
+                    && $product->currencyId() === 1
+                    && $product->grossMargin() === 408.0;
+            }))
             ->andReturn($expectedProduct);
 
         $creator = new ProductCreator($productRepository, $currencyRepository);
@@ -50,11 +52,8 @@ final class ProductCreatorTest extends TestCase
             taxCost: 192.00,
             manufacturingCost: 600.00
         );
-        $result = $creator($request);
 
-        $this->assertSame($expectedProduct, $result);
-        $this->assertSame('Test Laptop', $result->name());
-        $this->assertSame(408.0, $result->grossMargin());
+        $creator($request);
     }
 
     public function test_it_throws_exception_when_currency_does_not_exist(): void

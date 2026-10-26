@@ -20,14 +20,14 @@ final readonly class ProductPricesFinder
     /**
      * @return ProductPrice[]
      */
-    public function __invoke(int $productId): array
+    public function __invoke(FindProductPricesQuery $query): array
     {
-        $product = $this->productRepository->search($productId);
+        $product = $this->productRepository->search($query->productId());
 
         if ($product === null) {
-            throw new ProductNotFoundException($productId);
+            throw new ProductNotFoundException($query->productId());
         }
 
-        return $this->productPriceRepository->searchByProduct($productId);
+        return $this->productPriceRepository->searchByProduct($query->productId());
     }
 }

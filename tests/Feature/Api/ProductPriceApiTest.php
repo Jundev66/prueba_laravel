@@ -76,9 +76,7 @@ final class ProductPriceApiTest extends TestCase
             ]);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.product_id', $this->product->id)
-            ->assertJsonPath('data.currency_id', $this->eur->id)
-            ->assertJsonPath('data.price', 920);
+            ->assertJsonPath('message', 'Product price assigned successfully.');
 
         $this->assertDatabaseHas('product_prices', [
             'product_id' => $this->product->id,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Product\Application\Delete\DeleteProductCommand;
 use App\Modules\Product\Application\Delete\ProductDeleter;
 use Illuminate\Http\Response;
 use OpenApi\Attributes as OA;
@@ -37,7 +38,7 @@ final class DeleteProductController extends Controller
     )]
     public function __invoke(int $id): Response
     {
-        ($this->deleter)($id);
+        ($this->deleter)(new DeleteProductCommand($id));
 
         return response()->noContent();
     }

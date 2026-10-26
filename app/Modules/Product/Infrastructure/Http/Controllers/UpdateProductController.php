@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\Update\ProductUpdater;
 use App\Modules\Product\Application\Update\UpdateProductRequest as ApplicationUpdateRequest;
 use App\Modules\Product\Infrastructure\Http\Requests\UpdateProductRequest;
-use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
+use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
 final class UpdateProductController extends Controller
@@ -45,13 +45,21 @@ final class UpdateProductController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Product updated successfully'),
+            new OA\Response(
+                response: 200,
+                description: 'Product updated successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Product updated successfully.'),
+                    ]
+                )
+            ),
             new OA\Response(response: 404, description: 'Product or currency not found'),
             new OA\Response(response: 422, description: 'Validation error'),
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
-    public function __invoke(int $id, UpdateProductRequest $request): ProductResource
+    public function __invoke(int $id, UpdateProductRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -65,8 +73,10 @@ final class UpdateProductController extends Controller
             manufacturingCost: isset($validated['manufacturing_cost']) ? (float) $validated['manufacturing_cost'] : null
         );
 
-        $product = ($this->updater)($command);
+        ($this->updater)($command);
 
-        return new ProductResource($product);
+        return response()->json([
+            'message' => 'Product updated successfully.',
+        ], 200);
     }
 }

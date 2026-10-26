@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\Create\CreateProductRequest;
 use App\Modules\Product\Application\Create\ProductCreator;
 use App\Modules\Product\Infrastructure\Http\Requests\StoreProductRequest;
-use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use Illuminate\Http\JsonResponse;
 use OpenApi\Attributes as OA;
 
@@ -39,7 +38,15 @@ final class CreateProductController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: 201, description: 'Product created successfully'),
+            new OA\Response(
+                response: 201,
+                description: 'Product created successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Product created successfully.'),
+                    ]
+                )
+            ),
             new OA\Response(response: 422, description: 'Validation error'),
             new OA\Response(response: 404, description: 'Currency not found'),
             new OA\Response(response: 401, description: 'Unauthenticated'),
@@ -58,10 +65,10 @@ final class CreateProductController extends Controller
             manufacturingCost: (float) $validated['manufacturing_cost']
         );
 
-        $product = ($this->creator)($command);
+        ($this->creator)($command);
 
-        return (new ProductResource($product))
-            ->response()
-            ->setStatusCode(201);
+        return response()->json([
+            'message' => 'Product created successfully.',
+        ], 201);
     }
 }

@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Product\Application;
 
+use App\Modules\Product\Application\FindPrices\FindProductPricesQuery;
 use App\Modules\Product\Application\FindPrices\ProductPricesFinder;
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Product\Domain\Repositories\ProductPriceRepositoryInterface;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\ProductMother;
 use Tests\Unit\Product\Mothers\ProductPriceMother;
 
 final class ProductPricesFinderTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_finds_prices_for_existing_product(): void
     {
@@ -33,7 +31,7 @@ final class ProductPricesFinderTest extends TestCase
         $priceRepo->shouldReceive('searchByProduct')->once()->with(1)->andReturn($prices);
 
         $finder = new ProductPricesFinder($productRepo, $priceRepo);
-        $result = $finder(1);
+        $result = $finder(new FindProductPricesQuery(1));
 
         $this->assertSame($prices, $result);
         $this->assertCount(1, $result);
@@ -49,6 +47,6 @@ final class ProductPricesFinderTest extends TestCase
         $this->expectException(ProductNotFoundException::class);
 
         $finder = new ProductPricesFinder($productRepo, $priceRepo);
-        $finder(99);
+        $finder(new FindProductPricesQuery(99));
     }
 }

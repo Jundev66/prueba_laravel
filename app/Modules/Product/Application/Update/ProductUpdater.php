@@ -18,7 +18,7 @@ final readonly class ProductUpdater
     ) {
     }
 
-    public function __invoke(UpdateProductRequest $request): Product
+    public function __invoke(UpdateProductRequest $request): void
     {
         $product = $this->productRepository->search($request->id());
 
@@ -53,6 +53,6 @@ final readonly class ProductUpdater
             $product->changeManufacturingCost($request->manufacturingCost());
         }
 
-        return $this->productRepository->save($product);
+        $this->productRepository->save($product);
     }
 }

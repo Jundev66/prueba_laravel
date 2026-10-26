@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Product\Application;
 
+use App\Modules\Product\Application\Find\FindProductQuery;
 use App\Modules\Product\Application\Find\ProductFinder;
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\ProductMother;
 
 final class ProductFinderTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_finds_an_existing_product(): void
     {
@@ -30,7 +28,7 @@ final class ProductFinderTest extends TestCase
             ->andReturn($expectedProduct);
 
         $finder = new ProductFinder($productRepository);
-        $product = $finder(1);
+        $product = $finder(new FindProductQuery(1));
 
         $this->assertSame($expectedProduct, $product);
         $this->assertSame(1, $product->id());
@@ -47,6 +45,6 @@ final class ProductFinderTest extends TestCase
         $this->expectException(ProductNotFoundException::class);
 
         $finder = new ProductFinder($productRepository);
-        $finder(999);
+        $finder(new FindProductQuery(999));
     }
 }

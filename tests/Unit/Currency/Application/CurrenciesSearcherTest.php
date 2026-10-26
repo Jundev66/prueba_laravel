@@ -7,16 +7,13 @@ namespace Tests\Unit\Currency\Application;
 use App\Modules\Currency\Application\SearchAll\CurrenciesSearcher;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
 use Mockery;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Product\Mothers\CurrencyMother;
 
 final class CurrenciesSearcherTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-        parent::tearDown();
-    }
+    use MockeryPHPUnitIntegration;
 
     public function test_it_returns_all_currencies(): void
     {

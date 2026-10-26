@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Product\Application\FindPrices\FindProductPricesQuery;
 use App\Modules\Product\Application\FindPrices\ProductPricesFinder;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductPriceResource;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -38,7 +39,7 @@ final class ListProductPricesController extends Controller
     )]
     public function __invoke(int $id): AnonymousResourceCollection
     {
-        $prices = ($this->finder)($id);
+        $prices = ($this->finder)(new FindProductPricesQuery($id));
 
         return ProductPriceResource::collection($prices);
     }

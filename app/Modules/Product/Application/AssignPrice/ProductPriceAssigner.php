@@ -22,7 +22,7 @@ final readonly class ProductPriceAssigner
     ) {
     }
 
-    public function __invoke(AssignProductPriceRequest $request): ProductPrice
+    public function __invoke(AssignProductPriceRequest $request): void
     {
         $product = $this->productRepository->search($request->productId());
 
@@ -54,6 +54,6 @@ final readonly class ProductPriceAssigner
             currency: $currency,
         );
 
-        return $this->productPriceRepository->save($productPrice);
+        $this->productPriceRepository->save($productPrice);
     }
 }

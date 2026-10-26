@@ -100,9 +100,7 @@ final class ProductApiTest extends TestCase
             ->postJson('/api/v1/products', $payload);
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.name', 'Mechanical Keyboard')
-            ->assertJsonPath('data.price', 120)
-            ->assertJsonPath('data.gross_margin', 55.8);
+            ->assertJsonPath('message', 'Product created successfully.');
 
         $this->assertDatabaseHas('products', [
             'name' => 'Mechanical Keyboard',
@@ -190,8 +188,7 @@ final class ProductApiTest extends TestCase
             ]);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.name', 'New Name')
-            ->assertJsonPath('data.price', 550);
+            ->assertJsonPath('message', 'Product updated successfully.');
 
         $this->assertDatabaseHas('products', [
             'id' => $product->id,

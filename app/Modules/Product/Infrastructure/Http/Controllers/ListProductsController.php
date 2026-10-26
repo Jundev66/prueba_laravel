@@ -6,6 +6,7 @@ namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\SearchAll\ProductsSearcher;
+use App\Modules\Product\Application\SearchAll\SearchProductsQuery;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -53,7 +54,7 @@ final class ListProductsController extends Controller
         $perPage = (int) $request->query('per_page', 15);
         $page = (int) $request->query('page', 1);
 
-        $result = ($this->searcher)($perPage, $page);
+        $result = ($this->searcher)(new SearchProductsQuery($perPage, $page));
 
         return response()->json([
             'data' => ProductResource::collection($result['items']),

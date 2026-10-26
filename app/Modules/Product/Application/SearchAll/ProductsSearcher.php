@@ -17,8 +17,8 @@ final readonly class ProductsSearcher
     /**
      * @return array{items: Product[], total: int, per_page: int, current_page: int, last_page: int}
      */
-    public function __invoke(int $perPage = 15, int $page = 1): array
+    public function __invoke(SearchProductsQuery $query): array
     {
-        return $this->productRepository->searchAll($perPage, $page);
+        return $this->productRepository->searchAll($query->perPage(), $query->page());
     }
 }
