@@ -304,7 +304,7 @@
                     {
                         "name": "q",
                         "in": "query",
-                        "description": "Search keyword matching product name or description",
+                        "description": "Search keyword matching product name",
                         "required": false,
                         "schema": {
                             "type": "string",

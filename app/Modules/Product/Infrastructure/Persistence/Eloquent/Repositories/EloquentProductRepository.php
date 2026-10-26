@@ -79,10 +79,7 @@ final class EloquentProductRepository implements ProductRepositoryInterface
             ->with(['currency', 'prices.currency'])
             ->when($query !== null && trim($query) !== '', function ($builder) use ($query): void {
                 $term = '%'.trim($query).'%';
-                $builder->where(function ($q) use ($term): void {
-                    $q->where('name', 'like', $term)
-                        ->orWhere('description', 'like', $term);
-                });
+                $builder->where('name', 'like', $term);
             })
             ->when($currencyId !== null, fn ($b) => $b->where('currency_id', $currencyId))
             ->when($minPrice !== null, fn ($b) => $b->where('price', '>=', $minPrice))

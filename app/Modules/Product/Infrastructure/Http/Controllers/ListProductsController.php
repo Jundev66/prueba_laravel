@@ -28,7 +28,7 @@ final class ListProductsController extends Controller
             new OA\Parameter(
                 name: 'q',
                 in: 'query',
-                description: 'Search keyword matching product name or description',
+                description: 'Search keyword matching product name',
                 required: false,
                 schema: new OA\Schema(type: 'string', example: 'Laptop')
             ),
