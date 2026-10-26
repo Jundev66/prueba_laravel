@@ -226,4 +226,19 @@ final class ProductApiTest extends TestCase
             'id' => $product->id,
         ]);
     }
+
+    public function test_it_validates_get_query_parameters(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/products?per_page=999');
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['per_page']);
+
+        $responseCurrency = $this->actingAs($this->user)
+            ->getJson('/api/v1/products?currency_id=99999');
+
+        $responseCurrency->assertStatus(422)
+            ->assertJsonValidationErrors(['currency_id']);
+    }
 }

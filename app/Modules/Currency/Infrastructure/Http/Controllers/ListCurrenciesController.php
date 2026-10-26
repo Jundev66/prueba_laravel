@@ -7,8 +7,8 @@ namespace App\Modules\Currency\Infrastructure\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Currency\Application\SearchAll\CurrenciesSearcher;
 use App\Modules\Currency\Application\SearchAll\SearchCurrenciesQuery;
+use App\Modules\Currency\Infrastructure\Http\Requests\ListCurrenciesRequest;
 use App\Modules\Currency\Infrastructure\Http\Resources\CurrencyResource;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
 
@@ -53,9 +53,10 @@ final class ListCurrenciesController extends Controller
             new OA\Response(response: 401, description: 'Unauthenticated'),
         ]
     )]
-    public function __invoke(Request $request): AnonymousResourceCollection
+    public function __invoke(ListCurrenciesRequest $request): AnonymousResourceCollection
     {
-        $query = $request->query('q') !== null ? (string) $request->query('q') : null;
+        $validated = $request->validated();
+        $query = isset($validated['q']) ? (string) $validated['q'] : null;
 
         $currencies = ($this->searcher)(new SearchCurrenciesQuery($query));
 

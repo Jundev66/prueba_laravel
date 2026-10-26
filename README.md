@@ -144,8 +144,6 @@ test-token-backend-senior-2026
 | `GET` | `/api/v1/products/{id}/prices` | List secondary currency prices for product | Yes |
 | `POST` | `/api/v1/products/{id}/prices` | Assign new currency price to product | Yes |
 
-*(Canonical aliases without the `/v1` prefix like `/api/products` are also supported).*
-
 ---
 
 ## 🔭 Architectural Evolution: Path to Multi-Tenancy (SaaS)

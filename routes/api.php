@@ -32,15 +32,3 @@ Route::prefix('v1')->group(function (): void {
     });
 });
 
-Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function (): void {
-    Route::get('/currencies', \App\Modules\Currency\Infrastructure\Http\Controllers\ListCurrenciesController::class);
-
-    Route::get('/products', ListProductsController::class);
-    Route::post('/products', CreateProductController::class);
-    Route::get('/products/{id}', GetProductController::class)->whereNumber('id');
-    Route::put('/products/{id}', UpdateProductController::class)->whereNumber('id');
-    Route::delete('/products/{id}', DeleteProductController::class)->whereNumber('id');
-
-    Route::get('/products/{id}/prices', ListProductPricesController::class)->whereNumber('id');
-    Route::post('/products/{id}/prices', AssignProductPriceController::class)->whereNumber('id');
-});

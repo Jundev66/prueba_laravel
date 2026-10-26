@@ -7,9 +7,9 @@ namespace App\Modules\Product\Infrastructure\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\SearchAll\ProductsSearcher;
 use App\Modules\Product\Application\SearchAll\SearchProductsQuery;
+use App\Modules\Product\Infrastructure\Http\Requests\ListProductsRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 final class ListProductsController extends Controller
@@ -138,14 +138,16 @@ final class ListProductsController extends Controller
             ),
         ]
     )]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(ListProductsRequest $request): JsonResponse
     {
-        $query = $request->query('q') !== null ? (string) $request->query('q') : null;
-        $currencyId = $request->query('currency_id') !== null ? (int) $request->query('currency_id') : null;
-        $minPrice = $request->query('min_price') !== null ? (float) $request->query('min_price') : null;
-        $maxPrice = $request->query('max_price') !== null ? (float) $request->query('max_price') : null;
-        $perPage = (int) $request->query('per_page', 15);
-        $page = (int) $request->query('page', 1);
+        $validated = $request->validated();
+
+        $query = isset($validated['q']) ? (string) $validated['q'] : null;
+        $currencyId = isset($validated['currency_id']) ? (int) $validated['currency_id'] : null;
+        $minPrice = isset($validated['min_price']) ? (float) $validated['min_price'] : null;
+        $maxPrice = isset($validated['max_price']) ? (float) $validated['max_price'] : null;
+        $perPage = isset($validated['per_page']) ? (int) $validated['per_page'] : 15;
+        $page = isset($validated['page']) ? (int) $validated['page'] : 1;
 
         $result = ($this->searcher)(new SearchProductsQuery(
             query: $query,
