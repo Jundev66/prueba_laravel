@@ -37,8 +37,19 @@ final class AssignProductPriceController extends Controller
             content: new OA\JsonContent(
                 required: ['currency_id', 'price'],
                 properties: [
-                    new OA\Property(property: 'currency_id', type: 'integer', example: 2),
-                    new OA\Property(property: 'price', type: 'number', format: 'float', example: 1380.00),
+                    new OA\Property(
+                        property: 'currency_id',
+                        type: 'integer',
+                        example: 2,
+                        description: 'ID of secondary currency (1 = USD, 2 = EUR, 3 = VES). Consult GET /api/v1/currencies. Must not match product base currency.'
+                    ),
+                    new OA\Property(
+                        property: 'price',
+                        type: 'number',
+                        format: 'float',
+                        example: 1380.00,
+                        description: 'Specific price in the specified secondary currency'
+                    ),
                 ]
             )
         ),

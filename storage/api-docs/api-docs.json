@@ -127,6 +127,58 @@
                 ]
             }
         },
+        "/api/v1/currencies": {
+            "get": {
+                "tags": [
+                    "Currencies"
+                ],
+                "summary": "Get list of all supported currencies with exchange rates",
+                "description": "Returns the catalogue of currencies (e.g. USD, EUR, VES) and their exchange rates against base currency.",
+                "operationId": "7cd5633e954aa0521d64ceabacdcf3fa",
+                "responses": {
+                    "200": {
+                        "description": "List of currencies retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "US Dollar"
+                                            },
+                                            "symbol": {
+                                                "type": "string",
+                                                "example": "$"
+                                            },
+                                            "exchange_rate": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 1
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/products/{id}/prices": {
             "get": {
                 "tags": [
@@ -188,10 +240,12 @@
                                 ],
                                 "properties": {
                                     "currency_id": {
+                                        "description": "ID of secondary currency (1 = USD, 2 = EUR, 3 = VES). Consult GET /api/v1/currencies. Must not match product base currency.",
                                         "type": "integer",
                                         "example": 2
                                     },
                                     "price": {
+                                        "description": "Specific price in the specified secondary currency",
                                         "type": "number",
                                         "format": "float",
                                         "example": 1380
@@ -284,20 +338,24 @@
                                         "nullable": true
                                     },
                                     "price": {
+                                        "description": "Base price of the product in the base currency",
                                         "type": "number",
                                         "format": "float",
                                         "example": 1500
                                     },
                                     "currency_id": {
+                                        "description": "ID of the base currency (1 = USD, 2 = EUR, 3 = VES). Consult GET /api/v1/currencies",
                                         "type": "integer",
                                         "example": 1
                                     },
                                     "tax_cost": {
+                                        "description": "Tax cost of the product",
                                         "type": "number",
                                         "format": "float",
                                         "example": 240
                                     },
                                     "manufacturing_cost": {
+                                        "description": "Manufacturing cost of the product",
                                         "type": "number",
                                         "format": "float",
                                         "example": 850
@@ -490,6 +548,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Currencies",
+            "description": "Currencies"
         },
         {
             "name": "Product Prices",

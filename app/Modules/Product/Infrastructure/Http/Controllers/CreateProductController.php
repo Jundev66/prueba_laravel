@@ -31,10 +31,10 @@ final class CreateProductController extends Controller
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Laptop Pro 16'),
                     new OA\Property(property: 'description', type: 'string', nullable: true, example: 'Workstation laptop with 32GB RAM'),
-                    new OA\Property(property: 'price', type: 'number', format: 'float', example: 1500.00),
-                    new OA\Property(property: 'currency_id', type: 'integer', example: 1),
-                    new OA\Property(property: 'tax_cost', type: 'number', format: 'float', example: 240.00),
-                    new OA\Property(property: 'manufacturing_cost', type: 'number', format: 'float', example: 850.00),
+                    new OA\Property(property: 'price', type: 'number', format: 'float', example: 1500.00, description: 'Base price of the product in the base currency'),
+                    new OA\Property(property: 'currency_id', type: 'integer', example: 1, description: 'ID of the base currency (1 = USD, 2 = EUR, 3 = VES). Consult GET /api/v1/currencies'),
+                    new OA\Property(property: 'tax_cost', type: 'number', format: 'float', example: 240.00, description: 'Tax cost of the product'),
+                    new OA\Property(property: 'manufacturing_cost', type: 'number', format: 'float', example: 850.00, description: 'Manufacturing cost of the product'),
                 ]
             )
         ),

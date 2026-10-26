@@ -19,6 +19,8 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function (): void {
         Route::post('/auth/logout', LogoutController::class);
 
+        Route::get('/currencies', \App\Modules\Currency\Infrastructure\Http\Controllers\ListCurrenciesController::class);
+
         Route::get('/products', ListProductsController::class);
         Route::post('/products', CreateProductController::class);
         Route::get('/products/{id}', GetProductController::class)->whereNumber('id');
@@ -31,6 +33,8 @@ Route::prefix('v1')->group(function (): void {
 });
 
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function (): void {
+    Route::get('/currencies', \App\Modules\Currency\Infrastructure\Http\Controllers\ListCurrenciesController::class);
+
     Route::get('/products', ListProductsController::class);
     Route::post('/products', CreateProductController::class);
     Route::get('/products/{id}', GetProductController::class)->whereNumber('id');

@@ -38,6 +38,20 @@ final class ProductApiTest extends TestCase
         $response->assertStatus(401);
     }
 
+    public function test_it_can_list_supported_currencies(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/currencies');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    '*' => ['id', 'name', 'symbol', 'exchange_rate'],
+                ],
+            ])
+            ->assertJsonPath('data.0.name', 'US Dollar');
+    }
+
     public function test_it_can_list_products_paginated(): void
     {
         Product::query()->create([
