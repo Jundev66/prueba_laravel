@@ -205,6 +205,18 @@ final class ProductApiTest extends TestCase
             'id' => $product->id,
             'name' => 'New Name',
         ]);
+
+        $patchResponse = $this->actingAs($this->user)
+            ->patchJson('/api/v1/products/'.$product->id, [
+                'name' => 'Patched Name',
+            ]);
+
+        $patchResponse->assertStatus(200);
+
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'name' => 'Patched Name',
+        ]);
     }
 
     public function test_it_can_delete_product(): void

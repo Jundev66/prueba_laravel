@@ -24,7 +24,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/products', ListProductsController::class);
         Route::post('/products', CreateProductController::class);
         Route::get('/products/{id}', GetProductController::class)->whereNumber('id');
-        Route::put('/products/{id}', UpdateProductController::class)->whereNumber('id');
+        Route::match(['put', 'patch'], '/products/{id}', UpdateProductController::class)->whereNumber('id');
         Route::delete('/products/{id}', DeleteProductController::class)->whereNumber('id');
 
         Route::get('/products/{id}/prices', ListProductPricesController::class)->whereNumber('id');
