@@ -24,33 +24,33 @@ final readonly class ProductPriceAssigner
 
     public function __invoke(AssignProductPriceRequest $request): ProductPrice
     {
-        $product = $this->productRepository->search($request->productId);
+        $product = $this->productRepository->search($request->productId());
 
         if ($product === null) {
-            throw new ProductNotFoundException($request->productId);
+            throw new ProductNotFoundException($request->productId());
         }
 
-        $currency = $this->currencyRepository->search($request->currencyId);
+        $currency = $this->currencyRepository->search($request->currencyId());
 
         if ($currency === null) {
-            throw new CurrencyNotFoundException($request->currencyId);
+            throw new CurrencyNotFoundException($request->currencyId());
         }
 
-        if ($product->currencyId() === $request->currencyId) {
-            throw new BaseCurrencyCannotBeSecondaryException($request->currencyId);
+        if ($product->currencyId() === $request->currencyId()) {
+            throw new BaseCurrencyCannotBeSecondaryException($request->currencyId());
         }
 
-        $existing = $this->productPriceRepository->searchByProductAndCurrency($request->productId, $request->currencyId);
+        $existing = $this->productPriceRepository->searchByProductAndCurrency($request->productId(), $request->currencyId());
 
         if ($existing !== null) {
-            throw new CurrencyAlreadyAssignedException($request->currencyId);
+            throw new CurrencyAlreadyAssignedException($request->currencyId());
         }
 
         $productPrice = ProductPrice::create(
             id: null,
-            productId: $request->productId,
-            currencyId: $request->currencyId,
-            price: $request->price,
+            productId: $request->productId(),
+            currencyId: $request->currencyId(),
+            price: $request->price(),
             currency: $currency,
         );
 

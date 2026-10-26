@@ -7,13 +7,48 @@ namespace App\Modules\Product\Application\Update;
 final readonly class UpdateProductRequest
 {
     public function __construct(
-        public int $id,
-        public ?string $name = null,
-        public ?string $description = null,
-        public ?float $price = null,
-        public ?int $currencyId = null,
-        public ?float $taxCost = null,
-        public ?float $manufacturingCost = null,
+        private int $id,
+        private ?string $name = null,
+        private ?string $description = null,
+        private ?float $price = null,
+        private ?int $currencyId = null,
+        private ?float $taxCost = null,
+        private ?float $manufacturingCost = null,
     ) {
+    }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
+
+    public function description(): ?string
+    {
+        return $this->description;
+    }
+
+    public function price(): ?float
+    {
+        return $this->price;
+    }
+
+    public function currencyId(): ?int
+    {
+        return $this->currencyId;
+    }
+
+    public function taxCost(): ?float
+    {
+        return $this->taxCost;
+    }
+
+    public function manufacturingCost(): ?float
+    {
+        return $this->manufacturingCost;
     }
 }

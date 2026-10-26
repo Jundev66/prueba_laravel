@@ -18,7 +18,7 @@ final readonly class UserAuthenticator
      */
     public function __invoke(AuthenticateUserRequest $request): array
     {
-        $throttleKey = Str::transliterate(Str::lower($request->email).'|'.$request->clientIp);
+        $throttleKey = Str::transliterate(Str::lower($request->email()).'|'.$request->clientIp());
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
@@ -26,9 +26,9 @@ final readonly class UserAuthenticator
             throw new TooManyLoginAttemptsException($seconds);
         }
 
-        $user = User::query()->where('email', $request->email)->first();
+        $user = User::query()->where('email', $request->email())->first();
 
-        if ($user === null || !Hash::check($request->password, $user->password)) {
+        if ($user === null || !Hash::check($request->password(), $user->password)) {
             RateLimiter::hit($throttleKey, 60);
 
             throw new InvalidCredentialsException();
