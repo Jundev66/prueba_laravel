@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Api;
+namespace Tests\Feature\Product;
 
 use App\Models\User;
 use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\Product;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice;
+use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,32 +17,25 @@ final class ProductPriceApiTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
-    private Currency $usd;
-    private Currency $eur;
+
     private Product $product;
+
+    private Currency $usd;
+
+    private Currency $eur;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->seed(CurrencySeeder::class);
         $this->user = User::factory()->create();
 
-        $this->usd = Currency::query()->create([
-            'id' => 1,
-            'name' => 'US Dollar',
-            'symbol' => '$',
-            'exchange_rate' => 1.0000,
-        ]);
-
-        $this->eur = Currency::query()->create([
-            'id' => 2,
-            'name' => 'Euro',
-            'symbol' => '€',
-            'exchange_rate' => 0.9200,
-        ]);
+        $this->usd = Currency::query()->where('name', 'US Dollar')->firstOrFail();
+        $this->eur = Currency::query()->where('name', 'Euro')->firstOrFail();
 
         $this->product = Product::query()->create([
-            'name' => 'Flagship Phone',
+            'name' => 'Smartphone Galaxy',
             'description' => 'Flagship smartphone',
             'price' => 1000.0000,
             'currency_id' => $this->usd->id,

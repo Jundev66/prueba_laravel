@@ -16,7 +16,7 @@ final class EloquentCurrencyRepository implements CurrencyRepositoryInterface
     public function searchAll(): array
     {
         return EloquentCurrency::query()
-            ->orderBy('name')
+            ->orderBy('id')
             ->get()
             ->map(fn (EloquentCurrency $c) => DomainCurrency::fromPrimitives($c->toArray()))
             ->all();

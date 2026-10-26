@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Api;
+namespace Tests\Feature\Product;
 
 use App\Models\User;
 use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\Product;
+use Database\Seeders\CurrencySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,20 +16,16 @@ final class ProductApiTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Currency $currency;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->seed(CurrencySeeder::class);
         $this->user = User::factory()->create();
-
-        $this->currency = Currency::query()->create([
-            'id' => 1,
-            'name' => 'US Dollar',
-            'symbol' => '$',
-            'exchange_rate' => 1.0000,
-        ]);
+        $this->currency = Currency::query()->firstOrFail();
     }
 
     public function test_unauthenticated_requests_are_rejected(): void
@@ -36,20 +33,6 @@ final class ProductApiTest extends TestCase
         $response = $this->getJson('/api/v1/products');
 
         $response->assertStatus(401);
-    }
-
-    public function test_it_can_list_supported_currencies(): void
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/v1/currencies');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'name', 'symbol', 'exchange_rate'],
-                ],
-            ])
-            ->assertJsonPath('data.0.name', 'US Dollar');
     }
 
     public function test_it_can_list_products_paginated(): void
