@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Domain;
 
 use App\Modules\Currency\Domain\Currency;
+use App\Modules\Product\Domain\Exceptions\InvalidProductAttributeException;
 
 final class ProductPrice
 {
@@ -19,6 +20,10 @@ final class ProductPrice
 
     public static function create(?int $id, int $productId, int $currencyId, float $price, ?Currency $currency = null): self
     {
+        self::guardPrice($price);
+        self::guardId($productId, 'Product ID');
+        self::guardId($currencyId, 'Currency ID');
+
         return new self($id, $productId, $currencyId, $price, $currency);
     }
 
@@ -58,6 +63,12 @@ final class ProductPrice
         return $this->currency;
     }
 
+    public function changePrice(float $newPrice): void
+    {
+        self::guardPrice($newPrice);
+        $this->price = $newPrice;
+    }
+
     public function toPrimitives(): array
     {
         return [
@@ -67,5 +78,19 @@ final class ProductPrice
             'price' => $this->price,
             'currency' => $this->currency?->toPrimitives(),
         ];
+    }
+
+    private static function guardPrice(float $price): void
+    {
+        if ($price < 0) {
+            throw new InvalidProductAttributeException('Price must be greater than or equal to 0.');
+        }
+    }
+
+    private static function guardId(int $id, string $field): void
+    {
+        if ($id <= 0) {
+            throw new InvalidProductAttributeException(sprintf('%s must be a valid positive integer.', $field));
+        }
     }
 }

@@ -15,21 +15,19 @@ final class EloquentProductRepository implements ProductRepositoryInterface
 {
     public function save(DomainProduct $product): DomainProduct
     {
-        $attributes = [
-            'name' => $product->name(),
-            'description' => $product->description(),
-            'price' => $product->price(),
-            'currency_id' => $product->currencyId(),
-            'tax_cost' => $product->taxCost(),
-            'manufacturing_cost' => $product->manufacturingCost(),
-        ];
-
         if ($product->id() !== null) {
             $eloquent = EloquentProduct::query()->findOrFail($product->id());
-            $eloquent->update($attributes);
         } else {
-            $eloquent = EloquentProduct::query()->create($attributes);
+            $eloquent = new EloquentProduct();
         }
+
+        $eloquent->name = $product->name();
+        $eloquent->description = $product->description();
+        $eloquent->price = $product->price();
+        $eloquent->currency_id = $product->currencyId();
+        $eloquent->tax_cost = $product->taxCost();
+        $eloquent->manufacturing_cost = $product->manufacturingCost();
+        $eloquent->save();
 
         $eloquent->load(['currency', 'prices.currency']);
 

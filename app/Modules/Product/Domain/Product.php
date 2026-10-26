@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Domain;
 
 use App\Modules\Currency\Domain\Currency;
+use App\Modules\Product\Domain\Exceptions\InvalidProductAttributeException;
 
 final class Product
 {
@@ -38,6 +39,12 @@ final class Product
         ?Currency $currency = null,
         array $prices = [],
     ): self {
+        self::guardName($name);
+        self::guardPrice($price);
+        self::guardCurrencyId($currencyId);
+        self::guardCost($taxCost, 'Tax cost');
+        self::guardCost($manufacturingCost, 'Manufacturing cost');
+
         return new self($id, $name, $description, $price, $currencyId, $taxCost, $manufacturingCost, $currency, $prices);
     }
 
@@ -109,32 +116,39 @@ final class Product
         return (float) ($this->price - ($this->taxCost + $this->manufacturingCost));
     }
 
-    public function update(
-        ?string $name = null,
-        ?string $description = null,
-        ?float $price = null,
-        ?int $currencyId = null,
-        ?float $taxCost = null,
-        ?float $manufacturingCost = null,
-    ): void {
-        if ($name !== null) {
-            $this->name = $name;
-        }
-        if ($description !== null) {
-            $this->description = $description;
-        }
-        if ($price !== null) {
-            $this->price = $price;
-        }
-        if ($currencyId !== null) {
-            $this->currencyId = $currencyId;
-        }
-        if ($taxCost !== null) {
-            $this->taxCost = $taxCost;
-        }
-        if ($manufacturingCost !== null) {
-            $this->manufacturingCost = $manufacturingCost;
-        }
+    public function changeName(string $name): void
+    {
+        self::guardName($name);
+        $this->name = $name;
+    }
+
+    public function changeDescription(?string $description): void
+    {
+        $this->description = $description;
+    }
+
+    public function changePrice(float $price): void
+    {
+        self::guardPrice($price);
+        $this->price = $price;
+    }
+
+    public function changeCurrencyId(int $currencyId): void
+    {
+        self::guardCurrencyId($currencyId);
+        $this->currencyId = $currencyId;
+    }
+
+    public function changeTaxCost(float $taxCost): void
+    {
+        self::guardCost($taxCost, 'Tax cost');
+        $this->taxCost = $taxCost;
+    }
+
+    public function changeManufacturingCost(float $manufacturingCost): void
+    {
+        self::guardCost($manufacturingCost, 'Manufacturing cost');
+        $this->manufacturingCost = $manufacturingCost;
     }
 
     public function toPrimitives(): array
@@ -151,5 +165,33 @@ final class Product
             'currency' => $this->currency?->toPrimitives(),
             'prices' => array_map(fn (ProductPrice $p) => $p->toPrimitives(), $this->prices),
         ];
+    }
+
+    private static function guardName(string $name): void
+    {
+        if (trim($name) === '') {
+            throw new InvalidProductAttributeException('Product name cannot be empty.');
+        }
+    }
+
+    private static function guardPrice(float $price): void
+    {
+        if ($price < 0) {
+            throw new InvalidProductAttributeException('Product price must be greater than or equal to 0.');
+        }
+    }
+
+    private static function guardCurrencyId(int $currencyId): void
+    {
+        if ($currencyId <= 0) {
+            throw new InvalidProductAttributeException('Product currency ID must be a valid positive integer.');
+        }
+    }
+
+    private static function guardCost(float $cost, string $field): void
+    {
+        if ($cost < 0) {
+            throw new InvalidProductAttributeException(sprintf('%s must be greater than or equal to 0.', $field));
+        }
     }
 }

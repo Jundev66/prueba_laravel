@@ -13,15 +13,19 @@ final class EloquentProductPriceRepository implements ProductPriceRepositoryInte
 {
     public function save(DomainProductPrice $price): DomainProductPrice
     {
-        $eloquent = EloquentProductPrice::query()->updateOrCreate(
-            [
-                'product_id' => $price->productId(),
-                'currency_id' => $price->currencyId(),
-            ],
-            [
-                'price' => $price->price(),
-            ]
-        );
+        $eloquent = EloquentProductPrice::query()
+            ->where('product_id', $price->productId())
+            ->where('currency_id', $price->currencyId())
+            ->first();
+
+        if ($eloquent === null) {
+            $eloquent = new EloquentProductPrice();
+            $eloquent->product_id = $price->productId();
+            $eloquent->currency_id = $price->currencyId();
+        }
+
+        $eloquent->price = $price->price();
+        $eloquent->save();
 
         $eloquent->load('currency');
 
