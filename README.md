@@ -385,7 +385,7 @@ docker compose exec app php artisan test
 ```
 
 ### Resultados de la Suite:
-* **55 pruebas automatizadas pasando al 100%** (173 aserciones).
+* **51 pruebas automatizadas pasando al 100%** (166 aserciones).
 * **Unit Tests**: Casos de uso y entidades de dominio probados en memoria pura en milisegundos mediante mocks y *Object Mothers* (`ProductMother`, `CurrencyMother`, `ProductPriceMother`).
 * **Feature Tests**: Pruebas de integración HTTP contra base de datos aislada evaluando contratos JSON, códigos de estado, encabezados de seguridad y restricciones de negocio.
 
