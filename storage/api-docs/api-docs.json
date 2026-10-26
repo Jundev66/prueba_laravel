@@ -213,7 +213,58 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product prices retrieved successfully"
+                        "description": "Product secondary prices retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "product_id": {
+                                                "type": "integer",
+                                                "example": 1
+                                            },
+                                            "currency_id": {
+                                                "type": "integer",
+                                                "example": 2
+                                            },
+                                            "price": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 1380
+                                            },
+                                            "currency": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Euro"
+                                                    },
+                                                    "symbol": {
+                                                        "type": "string",
+                                                        "example": "€"
+                                                    },
+                                                    "exchange_rate": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 0.92
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Product not found"
@@ -376,7 +427,147 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Paginated list of products retrieved successfully"
+                        "description": "Paginated list of products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Laptop Pro 16"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "High performance laptop"
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 1500
+                                                    },
+                                                    "currency": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "US Dollar"
+                                                            },
+                                                            "symbol": {
+                                                                "type": "string",
+                                                                "example": "$"
+                                                            },
+                                                            "exchange_rate": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 1
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "tax_cost": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 240
+                                                    },
+                                                    "manufacturing_cost": {
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 850
+                                                    },
+                                                    "gross_margin": {
+                                                        "description": "Calculated as price - (tax_cost + manufacturing_cost)",
+                                                        "type": "number",
+                                                        "format": "float",
+                                                        "example": 410
+                                                    },
+                                                    "prices": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "product_id": {
+                                                                    "type": "integer",
+                                                                    "example": 1
+                                                                },
+                                                                "currency_id": {
+                                                                    "type": "integer",
+                                                                    "example": 2
+                                                                },
+                                                                "price": {
+                                                                    "type": "number",
+                                                                    "format": "float",
+                                                                    "example": 1380
+                                                                },
+                                                                "currency": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer",
+                                                                            "example": 2
+                                                                        },
+                                                                        "name": {
+                                                                            "type": "string",
+                                                                            "example": "Euro"
+                                                                        },
+                                                                        "symbol": {
+                                                                            "type": "string",
+                                                                            "example": "€"
+                                                                        },
+                                                                        "exchange_rate": {
+                                                                            "type": "number",
+                                                                            "format": "float",
+                                                                            "example": 0.92
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "meta": {
+                                            "properties": {
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthenticated"
@@ -498,7 +689,123 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product details retrieved successfully"
+                        "description": "Product details retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Laptop Pro 16"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "High performance laptop"
+                                                },
+                                                "price": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1500
+                                                },
+                                                "currency": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "US Dollar"
+                                                        },
+                                                        "symbol": {
+                                                            "type": "string",
+                                                            "example": "$"
+                                                        },
+                                                        "exchange_rate": {
+                                                            "type": "number",
+                                                            "format": "float",
+                                                            "example": 1
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "tax_cost": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 240
+                                                },
+                                                "manufacturing_cost": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 850
+                                                },
+                                                "gross_margin": {
+                                                    "description": "Calculated as price - (tax_cost + manufacturing_cost)",
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 410
+                                                },
+                                                "prices": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "product_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "currency_id": {
+                                                                "type": "integer",
+                                                                "example": 2
+                                                            },
+                                                            "price": {
+                                                                "type": "number",
+                                                                "format": "float",
+                                                                "example": 1380
+                                                            },
+                                                            "currency": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 2
+                                                                    },
+                                                                    "name": {
+                                                                        "type": "string",
+                                                                        "example": "Euro"
+                                                                    },
+                                                                    "symbol": {
+                                                                        "type": "string",
+                                                                        "example": "€"
+                                                                    },
+                                                                    "exchange_rate": {
+                                                                        "type": "number",
+                                                                        "format": "float",
+                                                                        "example": 0.92
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "description": "Product not found"
