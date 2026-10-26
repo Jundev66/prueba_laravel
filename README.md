@@ -1,39 +1,56 @@
 # Products & Multi-Currency REST API
 
-Production-ready, Clean Architecture (Hexagonal / ADR) RESTful API developed with Laravel 13, PHP 8.4, and MySQL 8.0, featuring multi-currency product management, Sanctum API authentication, automated testing with Object Mothers, and complete OpenAPI/Swagger documentation.
+Production-ready, Clean Architecture (CodelyTV DDD / Hexagonal / ADR) RESTful API developed with Laravel 13, PHP 8.4, and MySQL 8.0, featuring multi-currency product management, Sanctum API authentication, automated testing with Object Mothers, and complete OpenAPI/Swagger documentation.
 
 ---
 
-## 🏛️ Architecture Overview
+## 🏛️ Architecture Overview (CodelyTV DDD Style)
 
-The system implements **Hexagonal Architecture (Ports and Adapters)** decoupled into Bounded Modules:
+The system is organized into decoupled Bounded Modules following **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design (DDD)**:
 
 ```text
 app/
 ├── Modules/
 │   ├── Product/
 │   │   ├── Domain/
-│   │   │   ├── Repositories/        # Port interfaces (Pure PHP contracts)
-│   │   │   └── Exceptions/          # Domain exceptions with custom HTTP rendering
-│   │   ├── Application/
-│   │   │   ├── Actions/             # Atomic use cases
-│   │   │   └── DTOs/                # Strongly-typed immutable Data Transfer Objects
+│   │   │   ├── Product.php                  # Aggregate Root with create(), fromPrimitives(), toPrimitives() & getters
+│   │   │   ├── ProductPrice.php             # Domain Entity with getters & named constructors
+│   │   │   ├── Repositories/                # Domain Ports (ProductRepositoryInterface, ProductPriceRepositoryInterface)
+│   │   │   └── Exceptions/                  # Domain exceptions (ProductNotFound, CurrencyAlreadyAssigned)
+│   │   │
+│   │   ├── Application/                     # Organized into dedicated folders per Use Case
+│   │   │   ├── Create/ProductCreator.php
+│   │   │   ├── Find/ProductFinder.php
+│   │   │   ├── SearchAll/ProductsSearcher.php
+│   │   │   ├── Update/ProductUpdater.php
+│   │   │   ├── Delete/ProductDeleter.php
+│   │   │   ├── AssignPrice/ProductPriceAssigner.php
+│   │   │   └── FindPrices/ProductPricesFinder.php
+│   │   │
 │   │   └── Infrastructure/
-│   │       ├── Persistence/Eloquent/ # Eloquent models and repository implementations
-│   │       └── Http/                # Single Action Controllers (__invoke), FormRequests, Resources
-│   ├── Currency/                    # Multi-currency domain models, repositories & seeders
-│   └── Auth/                        # Sanctum Bearer token authentication
+│   │       ├── Persistence/Eloquent/        # Eloquent adapters translating Domain Entities <-> Database
+│   │       │   ├── Models/                  # Product & ProductPrice Eloquent models
+│   │       │   └── Repositories/            # EloquentProductRepository, EloquentProductPriceRepository
+│   │       └── Http/                        # Single Action Controllers (__invoke), FormRequests, Resources
+│   │
+│   ├── Currency/
+│   │   ├── Domain/                          # Currency Domain Entity with getters & CurrencyRepositoryInterface
+│   │   ├── Application/SearchAll/           # CurrenciesSearcher Use Case
+│   │   └── Infrastructure/                  # Eloquent adapter & ListCurrenciesController
+│   │
+│   └── Auth/                                # Sanctum Bearer token authentication
+│
 └── Shared/
     └── Infrastructure/
-        ├── Middleware/              # Cyber-security headers & rate limiters
-        └── Providers/               # Dependency injection container bindings
+        ├── Middleware/                      # Cyber-security headers & rate limiters
+        └── Providers/                       # RepositoryServiceProvider (DIP bindings)
 ```
 
-### Key Architectural Principles
-- **Single Responsibility Principle (SRP)**: Each endpoint is served by an atomic Single Action Controller (`__invoke()`).
-- **Dependency Inversion Principle (DIP)**: Application Actions depend solely on domain repository interfaces (`ProductRepositoryInterface`), not Eloquent directly.
-- **Self-Documenting Code**: Strict type declarations (`declare(strict_types=1);`), explicit parameter/return types, and zero clutter comments.
-- **Clean Exception Handling**: Domain exceptions map directly to semantic HTTP status codes (`404 Not Found`, `422 Unprocessable Content`).
+### Core Design Rules
+- **Pure Domain Entities**: Entities do not extend Eloquent. They have private properties, explicit getters (`id()`, `name()`, `price()`, `grossMargin()`), named constructors (`Product::create(...)`), and serialization methods (`fromPrimitives()`, `toPrimitives()`).
+- **Use Case Isolation**: Every use case has its own folder inside `Application/` (`ProductCreator`, `ProductFinder`, etc.).
+- **Boundary Decoupling**: Repositories accept and return pure Domain Entities, keeping Eloquent purely as a persistence detail inside `Infrastructure`.
+- **Zero Comments**: Clean, self-documenting code with `declare(strict_types=1);` and PHP 8 OpenAPI attributes.
 
 ---
 
@@ -55,11 +72,7 @@ app/
 
 ## 🚀 Getting Started with Docker
 
-### 1. Prerequisites
-- [Docker Engine & Docker Compose](https://www.docker.com/)
-
-### 2. Start Containers
-From the project root:
+### 1. Start Containers
 ```bash
 docker compose up -d
 ```
@@ -68,7 +81,7 @@ Services initialized:
 - `laravel_app`: PHP 8.4 FPM
 - `laravel_db`: MySQL 8.0 (Port `3306`)
 
-### 3. Run Migrations & Seeders
+### 2. Run Migrations & Seeders
 ```bash
 docker compose exec app php artisan migrate --seed
 ```
@@ -87,15 +100,14 @@ Pre-seeded data includes:
 
 ## 🧪 Automated Testing (ATDD / Unit & Feature)
 
-The test suite covers 100% of the domain rules, repository mocks, and HTTP integration contracts:
-
+Run the automated test suite:
 ```bash
 docker compose exec app php artisan test
 ```
 
 ### Testing Strategy
-- **Unit Tests**: Domain Actions tested in complete isolation using Mockery mocks and **Object Mothers** (`ProductMother`, `CurrencyMother`).
-- **Feature Tests**: End-to-end HTTP lifecycle tests against SQLite in-memory database verifying status codes, JSON structures, validations, and security headers.
+- **Unit Tests**: Use cases tested in complete isolation using Mockery mocks and **Object Mothers** (`ProductMother`, `CurrencyMother`, `ProductPriceMother`) asserting on domain getters.
+- **Feature Tests**: End-to-end HTTP integration tests against SQLite in-memory database verifying status codes, JSON contracts, validations, and security headers.
 
 ---
 
@@ -122,6 +134,7 @@ test-token-backend-senior-2026
 |---|---|---|---|
 | `POST` | `/api/v1/auth/login` | Authenticate and retrieve Bearer token | No |
 | `POST` | `/api/v1/auth/logout` | Revoke current Bearer token | Yes |
+| `GET` | `/api/v1/currencies` | List supported currencies and exchange rates | Yes |
 | `GET` | `/api/v1/products` | Paginated catalog list with gross margin | Yes |
 | `POST` | `/api/v1/products` | Create product with base currency | Yes |
 | `GET` | `/api/v1/products/{id}` | Retrieve product details | Yes |
@@ -141,4 +154,4 @@ To scale this application into a Multi-Tenant SaaS platform:
 2. **Data Isolation Strategy**:
    - *Soft Isolation*: Add a global Eloquent scope (`TenantScope`) filtering queries by `tenant_id`.
    - *Strict Isolation*: Implement dynamic database connection switching per tenant request via `DB::purge()` and `Config::set('database.connections.tenant.database', ...)`.
-3. **Decoupled Domain**: Because our Application Actions depend on `ProductRepositoryInterface`, the domain layer remains 100% untouched; only the infrastructure repository adapter needs tenant scoping.
+3. **Decoupled Domain**: Because our Application Use Cases depend on `ProductRepositoryInterface`, the domain layer remains 100% untouched; only the infrastructure repository adapter needs tenant scoping.
