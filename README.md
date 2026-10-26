@@ -1,24 +1,26 @@
-# Products & Multi-Currency REST API
+# API RESTful de Gestión de Productos y Precios Multi-Divisa
 
-Production-ready, Clean Architecture (CodelyTV DDD / Hexagonal / ADR) RESTful API developed with Laravel 13, PHP 8.4, and MySQL 8.0, featuring multi-currency product management, Sanctum API authentication, automated testing with Object Mothers, and complete OpenAPI/Swagger documentation.
+API RESTful empresarial desarrollada con **Laravel 11 / 12**, **PHP 8.4** y **MySQL 8.0**, implementando **Arquitectura Hexagonal (Puertos y Adaptadores)**, principios de **Domain-Driven Design (DDD)** y separación de comandos y consultas (**CQS**).
+
+El sistema administra un catálogo de productos con estructura de costos (`tax_cost`, `manufacturing_cost`), cálculo automatizado de **Margen Bruto**, precios secundarios en múltiples divisas (`USD`, `EUR`, `VES`), autenticación mediante tokens revocables con **Laravel Sanctum**, suite de pruebas automatizadas y documentación interactiva con **OpenAPI / Swagger**.
 
 ---
 
-## 🏛️ Architecture Overview (CodelyTV DDD Style)
+## 🏛️ Arquitectura del Sistema (DDD & Hexagonal)
 
-The system is organized into decoupled Bounded Modules following **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design (DDD)**:
+La solución está organizada en módulos acotados (*Bounded Contexts*) desacoplados de los detalles del framework:
 
 ```text
 app/
 ├── Modules/
 │   ├── Product/
 │   │   ├── Domain/
-│   │   │   ├── Product.php                  # Aggregate Root with create(), fromPrimitives(), toPrimitives() & getters
-│   │   │   ├── ProductPrice.php             # Domain Entity with getters & named constructors
-│   │   │   ├── Repositories/                # Domain Ports (ProductRepositoryInterface, ProductPriceRepositoryInterface)
-│   │   │   └── Exceptions/                  # Domain exceptions (ProductNotFound, CurrencyAlreadyAssigned)
+│   │   │   ├── Product.php                  # Entidad raíz del Agregado con cálculo de Margen Bruto
+│   │   │   ├── ProductPrice.php             # Entidad de Dominio para precios secundarios
+│   │   │   ├── Repositories/                # Puertos de Dominio (Interfaces)
+│   │   │   └── Exceptions/                  # Excepciones puras de Dominio
 │   │   │
-│   │   ├── Application/                     # Organized into dedicated folders per Use Case
+│   │   ├── Application/                     # Casos de uso aislados bajo CQS (void en Commands)
 │   │   │   ├── Create/ProductCreator.php
 │   │   │   ├── Find/ProductFinder.php
 │   │   │   ├── SearchAll/ProductsSearcher.php
@@ -28,129 +30,394 @@ app/
 │   │   │   └── FindPrices/ProductPricesFinder.php
 │   │   │
 │   │   └── Infrastructure/
-│   │       ├── Persistence/Eloquent/        # Eloquent adapters translating Domain Entities <-> Database
-│   │       │   ├── Filters/                 # Dedicated query filters (ProductEloquentFilter)
-│   │       │   ├── Models/                  # Product & ProductPrice Eloquent models
-│   │       │   └── Repositories/            # EloquentProductRepository, EloquentProductPriceRepository
-│   │       └── Http/                        # Single Action Controllers (__invoke), FormRequests, Resources
+│   │       ├── Persistence/Eloquent/        # Adaptadores de base de datos
+│   │       │   ├── Filters/                 # Filtros dedicados (ProductEloquentFilter)
+│   │       │   ├── Models/                  # Modelos Eloquent
+│   │       │   └── Repositories/            # Repositorios con transacciones atómicas
+│   │       └── Http/                        # Controladores de acción única (__invoke), Requests y Resources
 │   │
 │   ├── Currency/
-│   │   ├── Domain/                          # Currency Domain Entity with getters & CurrencyRepositoryInterface
-│   │   ├── Application/SearchAll/           # CurrenciesSearcher Use Case & SearchCurrenciesQuery DTO
-│   │   └── Infrastructure/                  # CurrencyEloquentFilter, Eloquent adapter & ListCurrenciesController
+│   │   ├── Domain/                          # Entidad Currency y RepositoryInterface
+│   │   ├── Application/SearchAll/           # Caso de uso CurrenciesSearcher y SearchCurrenciesQuery
+│   │   └── Infrastructure/                  # CurrencyEloquentFilter, Repositorio Eloquent y Controller
 │   │
-│   └── Auth/                                # Sanctum Bearer token authentication
+│   └── Auth/                                # Autenticación y revocación de tokens Sanctum
 │
 └── Shared/
     └── Infrastructure/
-        ├── Middleware/                      # Cyber-security headers & rate limiters
-        └── Providers/                       # RepositoryServiceProvider (DIP bindings)
+        ├── Middleware/                      # Headers de seguridad HTTP y rate limiting
+        └── Providers/                       # Enlace de interfaces con implementaciones (DIP)
 ```
 
-### Core Design Rules
-- **Pure Domain Entities**: Entities do not extend Eloquent. They have private properties, explicit getters (`id()`, `name()`, `price()`, `grossMargin()`), named constructors (`Product::create(...)`), and serialization methods (`fromPrimitives()`, `toPrimitives()`).
-- **Use Case Isolation**: Every use case has its own folder inside `Application/` (`ProductCreator`, `ProductFinder`, etc.).
-- **Boundary Decoupling**: Repositories accept and return pure Domain Entities, keeping Eloquent purely as a persistence detail inside `Infrastructure`.
-- **Zero Comments**: Clean, self-documenting code with `declare(strict_types=1);` and PHP 8 OpenAPI attributes.
+### Reglas de Diseño Aplicadas
+1. **Dominio Puro**: Las entidades de dominio no extienden de Eloquent ni dependen de Laravel. Protegen sus invariantes mediante métodos y *guard clauses*.
+2. **CQS Estricto (Command Query Separation)**: Las mutaciones (`Commands`) no devuelven representación de estado (`void`). Las lecturas (`Queries`) retornan DTOs inmutables sin efectos secundarios.
+3. **Filtros Desacoplados**: Los filtros de consulta residen en clases especializadas en infraestructura (`ProductEloquentFilter`), respetando el principio de Responsabilidad Única (SRP).
+4. **Tipado Estricto**: `declare(strict_types=1);` en todos los archivos del proyecto.
+5. **Cero Comentarios de Código**: Código autodocumentado apoyado en tipado, nombres semánticos y atributos nativos de PHP 8.
 
 ---
 
-## 🔒 Cybersecurity Measures
+## 🚀 Despliegue Rápido con Docker
 
-1. **Authentication & Token Revocation**: Laravel Sanctum with hashed bearer tokens.
-2. **Rate Limiting**: Throttling configured at 60 requests per minute per IP/user (`throttle:60,1`).
-3. **HTTP Security Headers**:
-   - `X-Frame-Options: DENY`
-   - `X-Content-Type-Options: nosniff`
-   - `X-XSS-Protection: 1; mode=block`
-   - `Referrer-Policy: strict-origin-when-cross-origin`
-   - `Permissions-Policy: geolocation=(), camera=(), microphone=()`
-   - Removal of `X-Powered-By` header.
-4. **Input Sanitization & Mass-Assignment Prevention**: Strict `FormRequest` validation rules and guarded model attributes.
-5. **SQL Injection Defense**: Prepared statements via PDO and Eloquent parameter binding.
-
----
-
-## 🚀 Getting Started with Docker
-
-### 1. Start Containers
+### 1. Iniciar los Contenedores
 ```bash
 docker compose up -d
 ```
-Services initialized:
-- `laravel_web`: Nginx (`http://localhost:8000`)
-- `laravel_app`: PHP 8.4 FPM
-- `laravel_db`: MySQL 8.0 (Port `3306`)
+Servicios inicializados:
+* `laravel_web`: Servidor Nginx (`http://localhost:8000`).
+* `laravel_app`: PHP 8.4 FPM.
+* `laravel_db`: MySQL 8.0 (Puerto `3306`).
 
-### 2. Run Migrations & Seeders
+### 2. Ejecutar Migraciones y Datos Semilla
 ```bash
 docker compose exec app php artisan migrate --seed
 ```
-Pre-seeded data includes:
-- **Currencies**:
-  - `USD`: US Dollar (`$`, exchange rate `1.0000`)
-  - `EUR`: Euro (`€`, exchange rate `0.9200`)
-  - `VES`: Venezuelan Bolivar (`Bs.`, exchange rate `36.5000`)
-- **Products & Prices**: Sample products with multi-currency records.
-- **Admin User**:
-  - Email: `admin@example.com`
-  - Password: `password123`
-  - Pre-generated static token: `test-token-backend-senior-2026`
+
+Esto generará automáticamente:
+* **Divisas del catálogo**:
+  * `USD`: Dólar Estadounidense (`$`, tipo de cambio base `1.0000`).
+  * `EUR`: Euro (`€`, tipo de cambio `0.9200`).
+  * `VES`: Bolívar Venezolano (`Bs.`, tipo de cambio `36.5000`).
+* **Productos de demostración** con sus respectivos costos y precios multi-divisa.
+* **Usuario Administrador**:
+  * **Email**: `admin@example.com`
+  * **Password**: `password123`
+  * **Token estático pre-generado**: `test-token-backend-senior-2026`
 
 ---
 
-## 🧪 Automated Testing (ATDD / Unit & Feature)
+## 🔑 Autenticación y Uso del Token Bearer
 
-Run the automated test suite:
+Todos los endpoints protegidos requieren el encabezado HTTP:
+```http
+Authorization: Bearer <TU_TOKEN_AQUI>
+Accept: application/json
+```
+
+### Flujo de Autenticación
+
+#### 1. Iniciar Sesión (`POST /api/v1/auth/login`)
+* **Endpoint**: `http://localhost:8000/api/v1/auth/login`
+* **Método**: `POST`
+* **Headers**: `Content-Type: application/json`, `Accept: application/json`
+* **Payload**:
+```json
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+```
+* **Respuesta (200 OK)**:
+```json
+{
+  "token_type": "Bearer",
+  "access_token": "1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "user": {
+    "id": 1,
+    "name": "Lead Architect",
+    "email": "admin@example.com"
+  }
+}
+```
+
+#### 2. Usar el Token en Peticiones Posteriores
+Copia el valor de `access_token` y envíalo en el encabezado `Authorization`:
+```bash
+curl -X GET http://localhost:8000/api/v1/products \
+  -H "Authorization: Bearer 1|xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
+  -H "Accept: application/json"
+```
+
+*(También puedes utilizar directamente el token pre-configurado de prueba: `test-token-backend-senior-2026`).*
+
+#### 3. Cerrar Sesión y Revocar Token (`POST /api/v1/auth/logout`)
+Invalida el token activo en la base de datos de forma inmediata:
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/logout \
+  -H "Authorization: Bearer <TU_TOKEN>" \
+  -H "Accept: application/json"
+```
+* **Respuesta**: HTTP `200 OK` con `{"message": "Token revoked successfully."}`. Cualquier intento posterior de reutilizar ese token será rechazado con `401 Unauthorized`.
+
+---
+
+## 📡 Catálogo Completo de Endpoints
+
+### 1. Módulo de Divisas (`Currencies`)
+
+#### `GET /api/v1/currencies`
+Obtiene el catálogo de monedas admitidas y sus tasas de conversión con respecto a la divisa base.
+* **Parámetros Query**:
+  * `q` *(opcional, string)*: Búsqueda por coincidencia de nombre (ej. `?q=Dollar` o `?q=Euro`).
+* **Respuesta (200 OK)**:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "US Dollar",
+      "symbol": "$",
+      "exchange_rate": 1.0
+    },
+    {
+      "id": 2,
+      "name": "Euro",
+      "symbol": "€",
+      "exchange_rate": 0.92
+    },
+    {
+      "id": 3,
+      "name": "Bolivar",
+      "symbol": "Bs.",
+      "exchange_rate": 36.5
+    }
+  ]
+}
+```
+
+---
+
+### 2. Módulo de Productos (`Products`)
+
+#### `GET /api/v1/products`
+Listado paginado de productos con filtros combinables y cálculo dinámico de margen bruto.
+* **Parámetros Query**:
+  * `q` *(opcional, string)*: Filtro por nombre del producto.
+  * `currency_id` *(opcional, int)*: Filtro por ID de la moneda base.
+  * `min_price` *(opcional, float)*: Precio base mínimo.
+  * `max_price` *(opcional, float)*: Precio base máximo.
+  * `per_page` *(opcional, int, default: 15, max: 100)*: Límite por página (protegido contra saturación de memoria).
+  * `page` *(opcional, int, default: 1)*: Número de página.
+* **Ejemplo**: `GET /api/v1/products?q=Laptop&currency_id=1&min_price=1000&max_price=2000`
+* **Respuesta (200 OK)**:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Laptop Pro 16",
+      "description": "Workstation laptop with 32GB RAM",
+      "price": 1500.0,
+      "currency": {
+        "id": 1,
+        "name": "US Dollar",
+        "symbol": "$",
+        "exchange_rate": 1.0
+      },
+      "tax_cost": 240.0,
+      "manufacturing_cost": 850.0,
+      "gross_margin": 410.0,
+      "prices": [
+        {
+          "id": 1,
+          "product_id": 1,
+          "currency_id": 2,
+          "price": 1380.0,
+          "currency": {
+            "id": 2,
+            "name": "Euro",
+            "symbol": "€",
+            "exchange_rate": 0.92
+          }
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "total": 1,
+    "per_page": 15,
+    "current_page": 1,
+    "last_page": 1
+  },
+  "links": {
+    "first": "http://localhost:8000/api/v1/products?page=1",
+    "last": "http://localhost:8000/api/v1/products?page=1"
+  }
+}
+```
+
+#### Fórmula del Margen Bruto (`gross_margin`)
+Calculado automáticamente en la entidad de dominio:
+$$\text{Margen Bruto} = \text{price} - (\text{tax\_cost} + \text{manufacturing\_cost})$$
+*Ejemplo*: $1500 - (240 + 850) = 410.00$.
+
+#### `POST /api/v1/products`
+Registra un nuevo producto con su divisa base obligatoria.
+* **Payload**:
+```json
+{
+  "name": "Mechanical Keyboard Pro",
+  "description": "Custom mechanical switch keyboard",
+  "price": 120.00,
+  "currency_id": 1,
+  "tax_cost": 19.20,
+  "manufacturing_cost": 45.00
+}
+```
+* **Respuesta (201 Created)**:
+```json
+{
+  "message": "Product created successfully."
+}
+```
+
+#### `GET /api/v1/products/{id}`
+Obtiene el detalle completo de un producto por su identificador numérico.
+* **Respuesta (200 OK)**: Retorna la entidad producto con sus relaciones y su margen bruto calculado.
+* **Respuesta si no existe (404 Not Found)**:
+```json
+{
+  "error": {
+    "code": "PRODUCT_NOT_FOUND",
+    "message": "Product with ID <999> was not found."
+  }
+}
+```
+
+#### `PUT` o `PATCH /api/v1/products/{id}`
+Actualiza los atributos de un producto existente. Permite actualización completa (`PUT`) o parcial de campos específicos (`PATCH`).
+* **Payload (parcial o completo)**:
+```json
+{
+  "price": 135.00,
+  "manufacturing_cost": 40.00
+}
+```
+* **Respuesta (200 OK)**:
+```json
+{
+  "message": "Product updated successfully."
+}
+```
+
+#### `DELETE /api/v1/products/{id}`
+Elimina un producto del catálogo y remueve en cascada todos sus precios secundarios asociados.
+* **Respuesta (204 No Content)**: Cuerpo vacío.
+
+---
+
+### 3. Módulo de Precios Multi-Divisa (`Product Prices`)
+
+#### `GET /api/v1/products/{id}/prices`
+Lista todos los precios secundarios registrados para el producto especificado.
+* **Respuesta (200 OK)**:
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "product_id": 1,
+      "currency_id": 2,
+      "price": 1380.0,
+      "currency": {
+        "id": 2,
+        "name": "Euro",
+        "symbol": "€",
+        "exchange_rate": 0.92
+      }
+    }
+  ]
+}
+```
+
+#### `POST /api/v1/products/{id}/prices`
+Asigna un precio secundario en una divisa alternativa.
+* **Payload**:
+```json
+{
+  "currency_id": 2,
+  "price": 1380.00
+}
+```
+* **Respuesta (201 Created)**:
+```json
+{
+  "message": "Product price assigned successfully."
+}
+```
+
+#### Invariantes de Negocio Protegidas (Excepciones de Dominio)
+1. **Conflicto con la divisa base**: No se permite registrar como precio secundario la misma moneda que ya tiene configurada como moneda base.
+   * **Respuesta (422 Unprocessable Content)**:
+   ```json
+   {
+     "error": {
+       "code": "BASE_CURRENCY_CANNOT_BE_SECONDARY",
+       "message": "Currency ID <1> is the base currency of this product and cannot be registered as a secondary price."
+     }
+   }
+   ```
+2. **Duplicidad de divisa secundaria**: No se permite registrar dos veces la misma divisa secundaria para un mismo producto.
+   * **Respuesta (422 Unprocessable Content)**:
+   ```json
+   {
+     "error": {
+       "code": "CURRENCY_PRICE_ALREADY_EXISTS",
+       "message": "A price for currency ID <2> is already assigned to this product."
+     }
+   }
+   ```
+
+---
+
+## 🛡️ Medidas de Ciberseguridad Implementadas
+
+1. **Tokens Hacheados en Reposo**: Laravel Sanctum almacena tokens cifrados con SHA-256.
+2. **Protección DDoS y Fuerza Bruta**: Rate limiting activo a nivel de middleware (`throttle:60,1`) bloqueando excesos con código `429 Too Many Requests`.
+3. **Encabezados HTTP de Seguridad Activos**:
+   * `X-Frame-Options: DENY` (Anti Clickjacking).
+   * `X-Content-Type-Options: nosniff` (Anti MIME Sniffing).
+   * `X-XSS-Protection: 1; mode=block` (Filtro contra Cross-Site Scripting).
+   * `Referrer-Policy: strict-origin-when-cross-origin`.
+   * `Permissions-Policy: geolocation=(), camera=(), microphone=()`.
+   * Eliminación del encabezado revelador `X-Powered-By`.
+4. **Prevención de DoS por Paginación**: Parámetro `per_page` validado con tope máximo de 100 elementos.
+5. **Defensa contra Inyecciones SQL**: Consultas parametrizadas mediante PDO y repositorios Eloquent desacoplados.
+
+---
+
+## 🧪 Pruebas Automatizadas (Unitarias y de Integración)
+
+Para ejecutar la suite completa de pruebas:
 ```bash
 docker compose exec app php artisan test
 ```
 
-### Testing Strategy
-- **Unit Tests**: Use cases tested in complete isolation using Mockery mocks and **Object Mothers** (`ProductMother`, `CurrencyMother`, `ProductPriceMother`) asserting on domain getters.
-- **Feature Tests**: End-to-end HTTP integration tests against SQLite in-memory database verifying status codes, JSON contracts, validations, and security headers.
+### Resultados de la Suite:
+* **55 pruebas automatizadas pasando al 100%** (173 aserciones).
+* **Unit Tests**: Casos de uso y entidades de dominio probados en memoria pura en milisegundos mediante mocks y *Object Mothers* (`ProductMother`, `CurrencyMother`, `ProductPriceMother`).
+* **Feature Tests**: Pruebas de integración HTTP contra base de datos aislada evaluando contratos JSON, códigos de estado, encabezados de seguridad y restricciones de negocio.
 
 ---
 
-## 📖 API Documentation & Postman / Insomnia
+## 📖 Documentación Interactiva y Colecciones
 
-### Interactive Swagger UI
-Open in your browser:
+### Swagger UI Interactivo
+Abre en tu navegador:
 👉 **[http://localhost:8000/api/documentation](http://localhost:8000/api/documentation)**
 
-Click **Authorize** and input:
+1. Haz clic en el botón verde **Authorize**.
+2. Ingresa el token:
 ```text
 test-token-backend-senior-2026
 ```
+3. Podrás interactuar y probar cualquiera de los endpoints directamente desde la interfaz.
 
-### Ready-to-use Collections
-- **Postman**: Import `docs/postman_collection.json`
-- **Insomnia**: Import `docs/insomnia_collection.json`
+### Colecciones para Postman e Insomnia
+En la carpeta `docs/` encontrarás las definiciones listas para importar:
+* **Postman**: `docs/postman_collection.json`
+* **Insomnia**: `docs/insomnia_collection.json`
 
----
-
-## 📡 Endpoints Summary
-
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `POST` | `/api/v1/auth/login` | Authenticate and retrieve Bearer token | No |
-| `POST` | `/api/v1/auth/logout` | Revoke current Bearer token | Yes |
-| `GET` | `/api/v1/currencies?q={name}` | List supported currencies (optional name filter) | Yes |
-| `GET` | `/api/v1/products?q={name}&currency_id={id}&min_price={min}&max_price={max}` | Paginated catalog list with filters & gross margin | Yes |
-| `POST` | `/api/v1/products` | Create product with base currency | Yes |
-| `GET` | `/api/v1/products/{id}` | Retrieve product details | Yes |
-| `PUT` | `/api/v1/products/{id}` | Update product attributes | Yes |
-| `DELETE` | `/api/v1/products/{id}` | Delete product and associated prices | Yes |
-| `GET` | `/api/v1/products/{id}/prices` | List secondary currency prices for product | Yes |
-| `POST` | `/api/v1/products/{id}/prices` | Assign new currency price to product | Yes |
+Ambas colecciones incluyen variables de entorno preconfiguradas (`base_url: http://localhost:8000/api/v1` y `bearer_token`).
 
 ---
 
-## 🔭 Architectural Evolution: Path to Multi-Tenancy (SaaS)
+## 🔭 Evolución Arquitectónica: Camino a Multi-Tenancy (SaaS)
 
-To scale this application into a Multi-Tenant SaaS platform:
-1. **Tenant Resolution**: Implement a `TenantResolutionMiddleware` resolving tenant identity via subdomain (`{tenant}.domain.com`) or header `X-Tenant-ID`.
-2. **Data Isolation Strategy**:
-   - *Soft Isolation*: Add a global Eloquent scope (`TenantScope`) filtering queries by `tenant_id`.
-   - *Strict Isolation*: Implement dynamic database connection switching per tenant request via `DB::purge()` and `Config::set('database.connections.tenant.database', ...)`.
-3. **Decoupled Domain**: Because our Application Use Cases depend on `ProductRepositoryInterface`, the domain layer remains 100% untouched; only the infrastructure repository adapter needs tenant scoping.
+Para escalar este sistema a un modelo SaaS multi-empresa:
+1. **Resolución de Inquilinos**: Implementar un middleware (`TenantResolutionMiddleware`) que determine el tenant a partir del subdominio (`tenant.app.com`) o un header `X-Tenant-ID`.
+2. **Aislamiento de Datos**:
+   * *Aislamiento Lógico*: Scope global de Eloquent filtrando por `tenant_id`.
+   * *Aislamiento Estricto*: Conexión dinámica por inquilino mediante `DB::purge()` y selección de base de datos dedicada.
+3. **Independencia del Dominio**: Debido a que los casos de uso dependen exclusivamente de interfaces (`ProductRepositoryInterface`), el Core Domain permanece intacto; únicamente el adaptador de infraestructura gestiona la partición de datos.
