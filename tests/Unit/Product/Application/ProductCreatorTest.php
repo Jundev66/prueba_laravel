@@ -6,6 +6,7 @@ namespace Tests\Unit\Product\Application;
 
 use App\Modules\Currency\Domain\Exceptions\CurrencyNotFoundException;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
+use App\Modules\Product\Application\Create\CreateProductRequest;
 use App\Modules\Product\Application\Create\ProductCreator;
 use App\Modules\Product\Domain\Product;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
@@ -41,7 +42,7 @@ final class ProductCreatorTest extends TestCase
             ->andReturn($expectedProduct);
 
         $creator = new ProductCreator($productRepository, $currencyRepository);
-        $result = $creator(
+        $request = new CreateProductRequest(
             name: 'Test Laptop',
             description: 'A powerful laptop for development',
             price: 1200.00,
@@ -49,6 +50,7 @@ final class ProductCreatorTest extends TestCase
             taxCost: 192.00,
             manufacturingCost: 600.00
         );
+        $result = $creator($request);
 
         $this->assertSame($expectedProduct, $result);
         $this->assertSame('Test Laptop', $result->name());
@@ -70,13 +72,13 @@ final class ProductCreatorTest extends TestCase
         $this->expectException(CurrencyNotFoundException::class);
 
         $creator = new ProductCreator($productRepository, $currencyRepository);
-        $creator(
+        $creator(new CreateProductRequest(
             name: 'Test Laptop',
             description: null,
             price: 1200.00,
             currencyId: 999,
             taxCost: 192.00,
             manufacturingCost: 600.00
-        );
+        ));
     }
 }

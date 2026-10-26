@@ -17,28 +17,22 @@ final readonly class ProductCreator
     ) {
     }
 
-    public function __invoke(
-        string $name,
-        ?string $description,
-        float $price,
-        int $currencyId,
-        float $taxCost,
-        float $manufacturingCost,
-    ): Product {
-        $currency = $this->currencyRepository->search($currencyId);
+    public function __invoke(CreateProductRequest $request): Product
+    {
+        $currency = $this->currencyRepository->search($request->currencyId);
 
         if ($currency === null) {
-            throw new CurrencyNotFoundException($currencyId);
+            throw new CurrencyNotFoundException($request->currencyId);
         }
 
         $product = Product::create(
             id: null,
-            name: $name,
-            description: $description,
-            price: $price,
-            currencyId: $currencyId,
-            taxCost: $taxCost,
-            manufacturingCost: $manufacturingCost,
+            name: $request->name,
+            description: $request->description,
+            price: $request->price,
+            currencyId: $request->currencyId,
+            taxCost: $request->taxCost,
+            manufacturingCost: $request->manufacturingCost,
             currency: $currency,
         );
 

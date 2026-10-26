@@ -86,6 +86,9 @@
                     "401": {
                         "description": "Invalid credentials"
                     },
+                    "429": {
+                        "description": "Too many login attempts"
+                    },
                     "422": {
                         "description": "Validation error"
                     }

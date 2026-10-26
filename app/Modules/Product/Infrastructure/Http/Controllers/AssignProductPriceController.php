@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Product\Application\AssignPrice\AssignProductPriceRequest;
 use App\Modules\Product\Application\AssignPrice\ProductPriceAssigner;
 use App\Modules\Product\Infrastructure\Http\Requests\StoreProductPriceRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductPriceResource;
@@ -63,11 +64,13 @@ final class AssignProductPriceController extends Controller
     {
         $validated = $request->validated();
 
-        $price = ($this->assigner)(
+        $command = new AssignProductPriceRequest(
             productId: $id,
             currencyId: (int) $validated['currency_id'],
             price: (float) $validated['price']
         );
+
+        $price = ($this->assigner)($command);
 
         return (new ProductPriceResource($price))
             ->response()

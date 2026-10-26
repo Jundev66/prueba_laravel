@@ -6,6 +6,7 @@ namespace Tests\Unit\Product\Application;
 
 use App\Modules\Currency\Domain\Exceptions\CurrencyNotFoundException;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
+use App\Modules\Product\Application\AssignPrice\AssignProductPriceRequest;
 use App\Modules\Product\Application\AssignPrice\ProductPriceAssigner;
 use App\Modules\Product\Domain\Exceptions\BaseCurrencyCannotBeSecondaryException;
 use App\Modules\Product\Domain\Exceptions\CurrencyAlreadyAssignedException;
@@ -43,7 +44,7 @@ final class ProductPriceAssignerTest extends TestCase
         $priceRepo->shouldReceive('save')->once()->with(Mockery::type(ProductPrice::class))->andReturn($expectedPrice);
 
         $assigner = new ProductPriceAssigner($productRepo, $priceRepo, $currencyRepo);
-        $result = $assigner(productId: 1, currencyId: 2, price: 1100.00);
+        $result = $assigner(new AssignProductPriceRequest(productId: 1, currencyId: 2, price: 1100.00));
 
         $this->assertSame($expectedPrice, $result);
         $this->assertSame(1100.00, $result->price());
@@ -65,7 +66,7 @@ final class ProductPriceAssignerTest extends TestCase
         $this->expectException(BaseCurrencyCannotBeSecondaryException::class);
 
         $assigner = new ProductPriceAssigner($productRepo, $priceRepo, $currencyRepo);
-        $assigner(productId: 1, currencyId: 1, price: 1200.00);
+        $assigner(new AssignProductPriceRequest(productId: 1, currencyId: 1, price: 1200.00));
     }
 
     public function test_it_throws_when_secondary_price_already_exists_for_currency(): void
@@ -85,6 +86,6 @@ final class ProductPriceAssignerTest extends TestCase
         $this->expectException(CurrencyAlreadyAssignedException::class);
 
         $assigner = new ProductPriceAssigner($productRepo, $priceRepo, $currencyRepo);
-        $assigner(productId: 1, currencyId: 2, price: 1100.00);
+        $assigner(new AssignProductPriceRequest(productId: 1, currencyId: 2, price: 1100.00));
     }
 }

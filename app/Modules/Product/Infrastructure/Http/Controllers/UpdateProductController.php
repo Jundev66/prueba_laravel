@@ -6,6 +6,7 @@ namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Product\Application\Update\ProductUpdater;
+use App\Modules\Product\Application\Update\UpdateProductRequest as ApplicationUpdateRequest;
 use App\Modules\Product\Infrastructure\Http\Requests\UpdateProductRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use OpenApi\Attributes as OA;
@@ -54,7 +55,7 @@ final class UpdateProductController extends Controller
     {
         $validated = $request->validated();
 
-        $product = ($this->updater)(
+        $command = new ApplicationUpdateRequest(
             id: $id,
             name: isset($validated['name']) ? (string) $validated['name'] : null,
             description: array_key_exists('description', $validated) ? ($validated['description'] !== null ? (string) $validated['description'] : null) : null,
@@ -63,6 +64,8 @@ final class UpdateProductController extends Controller
             taxCost: isset($validated['tax_cost']) ? (float) $validated['tax_cost'] : null,
             manufacturingCost: isset($validated['manufacturing_cost']) ? (float) $validated['manufacturing_cost'] : null
         );
+
+        $product = ($this->updater)($command);
 
         return new ProductResource($product);
     }

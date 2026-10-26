@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Product\Application\Create\CreateProductRequest;
 use App\Modules\Product\Application\Create\ProductCreator;
 use App\Modules\Product\Infrastructure\Http\Requests\StoreProductRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
@@ -48,7 +49,7 @@ final class CreateProductController extends Controller
     {
         $validated = $request->validated();
 
-        $product = ($this->creator)(
+        $command = new CreateProductRequest(
             name: (string) $validated['name'],
             description: isset($validated['description']) ? (string) $validated['description'] : null,
             price: (float) $validated['price'],
@@ -56,6 +57,8 @@ final class CreateProductController extends Controller
             taxCost: (float) $validated['tax_cost'],
             manufacturingCost: (float) $validated['manufacturing_cost']
         );
+
+        $product = ($this->creator)($command);
 
         return (new ProductResource($product))
             ->response()

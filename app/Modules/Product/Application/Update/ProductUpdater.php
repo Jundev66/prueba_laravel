@@ -18,46 +18,39 @@ final readonly class ProductUpdater
     ) {
     }
 
-    public function __invoke(
-        int $id,
-        ?string $name = null,
-        ?string $description = null,
-        ?float $price = null,
-        ?int $currencyId = null,
-        ?float $taxCost = null,
-        ?float $manufacturingCost = null,
-    ): Product {
-        $product = $this->productRepository->search($id);
+    public function __invoke(UpdateProductRequest $request): Product
+    {
+        $product = $this->productRepository->search($request->id);
 
         if ($product === null) {
-            throw new ProductNotFoundException($id);
+            throw new ProductNotFoundException($request->id);
         }
 
-        if ($name !== null) {
-            $product->changeName($name);
+        if ($request->name !== null) {
+            $product->changeName($request->name);
         }
 
-        if ($description !== null) {
-            $product->changeDescription($description);
+        if ($request->description !== null) {
+            $product->changeDescription($request->description);
         }
 
-        if ($price !== null) {
-            $product->changePrice($price);
+        if ($request->price !== null) {
+            $product->changePrice($request->price);
         }
 
-        if ($currencyId !== null) {
-            if (!$this->currencyRepository->exists($currencyId)) {
-                throw new CurrencyNotFoundException($currencyId);
+        if ($request->currencyId !== null) {
+            if (!$this->currencyRepository->exists($request->currencyId)) {
+                throw new CurrencyNotFoundException($request->currencyId);
             }
-            $product->changeCurrencyId($currencyId);
+            $product->changeCurrencyId($request->currencyId);
         }
 
-        if ($taxCost !== null) {
-            $product->changeTaxCost($taxCost);
+        if ($request->taxCost !== null) {
+            $product->changeTaxCost($request->taxCost);
         }
 
-        if ($manufacturingCost !== null) {
-            $product->changeManufacturingCost($manufacturingCost);
+        if ($request->manufacturingCost !== null) {
+            $product->changeManufacturingCost($request->manufacturingCost);
         }
 
         return $this->productRepository->save($product);

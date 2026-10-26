@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Modules\Auth\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Auth\Application\Logout\UserTokenRevoker;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 final class LogoutController extends Controller
 {
+    public function __construct(
+        private readonly UserTokenRevoker $revoker,
+    ) {
+    }
+
     #[OA\Post(
         path: '/api/v1/auth/logout',
         summary: 'Revoke active API Bearer token',
@@ -31,7 +37,7 @@ final class LogoutController extends Controller
     )]
     public function __invoke(Request $request): JsonResponse
     {
-        $request->user()?->currentAccessToken()?->delete();
+        ($this->revoker)($request->user());
 
         return response()->json([
             'message' => 'Token revoked successfully.',

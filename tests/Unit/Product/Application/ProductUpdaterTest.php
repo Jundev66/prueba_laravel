@@ -7,6 +7,7 @@ namespace Tests\Unit\Product\Application;
 use App\Modules\Currency\Domain\Exceptions\CurrencyNotFoundException;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
 use App\Modules\Product\Application\Update\ProductUpdater;
+use App\Modules\Product\Application\Update\UpdateProductRequest;
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
 use App\Modules\Product\Domain\Product;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
@@ -33,7 +34,7 @@ final class ProductUpdaterTest extends TestCase
         $productRepo->shouldReceive('save')->once()->with(Mockery::type(Product::class))->andReturn($product);
 
         $updater = new ProductUpdater($productRepo, $currencyRepo);
-        $result = $updater(id: 1, name: 'Renamed Laptop', price: 1350.00);
+        $result = $updater(new UpdateProductRequest(id: 1, name: 'Renamed Laptop', price: 1350.00));
 
         $this->assertSame('Renamed Laptop', $result->name());
         $this->assertSame(1350.00, $result->price());
@@ -49,7 +50,7 @@ final class ProductUpdaterTest extends TestCase
         $this->expectException(ProductNotFoundException::class);
 
         $updater = new ProductUpdater($productRepo, $currencyRepo);
-        $updater(id: 99, name: 'Non existent');
+        $updater(new UpdateProductRequest(id: 99, name: 'Non existent'));
     }
 
     public function test_it_throws_when_updating_with_invalid_currency(): void
@@ -65,6 +66,6 @@ final class ProductUpdaterTest extends TestCase
         $this->expectException(CurrencyNotFoundException::class);
 
         $updater = new ProductUpdater($productRepo, $currencyRepo);
-        $updater(id: 1, currencyId: 999);
+        $updater(new UpdateProductRequest(id: 1, currencyId: 999));
     }
 }
