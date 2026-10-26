@@ -19,6 +19,13 @@ final readonly class ProductsSearcher
      */
     public function __invoke(SearchProductsQuery $query): array
     {
-        return $this->productRepository->searchAll($query->perPage(), $query->page());
+        return $this->productRepository->searchAll(
+            query: $query->query(),
+            currencyId: $query->currencyId(),
+            minPrice: $query->minPrice(),
+            maxPrice: $query->maxPrice(),
+            perPage: $query->perPage(),
+            page: $query->page(),
+        );
     }
 }

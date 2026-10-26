@@ -68,6 +68,34 @@ final class ProductApiTest extends TestCase
             ]);
     }
 
+    public function test_it_can_filter_products_by_search_query_and_price_range(): void
+    {
+        Product::query()->create([
+            'name' => 'MacBook Pro 14',
+            'description' => 'M3 chip powerhouse',
+            'price' => 1999.00,
+            'currency_id' => $this->currency->id,
+            'tax_cost' => 300.00,
+            'manufacturing_cost' => 900.00,
+        ]);
+
+        Product::query()->create([
+            'name' => 'Budget Smartphone',
+            'description' => 'Android phone',
+            'price' => 200.00,
+            'currency_id' => $this->currency->id,
+            'tax_cost' => 30.00,
+            'manufacturing_cost' => 90.00,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson('/api/v1/products?q=MacBook&min_price=1000&max_price=2500');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'MacBook Pro 14');
+    }
+
     public function test_it_can_create_a_product_with_valid_data(): void
     {
         $payload = [

@@ -30,11 +30,18 @@ final class ProductsSearcherTest extends TestCase
         $productRepo = Mockery::mock(ProductRepositoryInterface::class);
         $productRepo->shouldReceive('searchAll')
             ->once()
-            ->with(15, 1)
+            ->with('laptop', 1, 100.00, 2000.00, 15, 1)
             ->andReturn($expectedResult);
 
         $searcher = new ProductsSearcher($productRepo);
-        $result = $searcher(new SearchProductsQuery(15, 1));
+        $result = $searcher(new SearchProductsQuery(
+            query: 'laptop',
+            currencyId: 1,
+            minPrice: 100.00,
+            maxPrice: 2000.00,
+            perPage: 15,
+            page: 1
+        ));
 
         $this->assertSame($expectedResult, $result);
         $this->assertCount(1, $result['items']);

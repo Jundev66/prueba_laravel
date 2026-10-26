@@ -67,12 +67,29 @@ final class EloquentProductRepository implements ProductRepositoryInterface
     /**
      * @return array{items: DomainProduct[], total: int, per_page: int, current_page: int, last_page: int}
      */
-    public function searchAll(int $perPage = 15, int $page = 1): array
-    {
-        $paginator = EloquentProduct::query()
+    public function searchAll(
+        ?string $query = null,
+        ?int $currencyId = null,
+        ?float $minPrice = null,
+        ?float $maxPrice = null,
+        int $perPage = 15,
+        int $page = 1
+    ): array {
+        $builder = EloquentProduct::query()
             ->with(['currency', 'prices.currency'])
-            ->orderByDesc('id')
-            ->paginate($perPage, ['*'], 'page', $page);
+            ->when($query !== null && trim($query) !== '', function ($builder) use ($query): void {
+                $term = '%'.trim($query).'%';
+                $builder->where(function ($q) use ($term): void {
+                    $q->where('name', 'like', $term)
+                        ->orWhere('description', 'like', $term);
+                });
+            })
+            ->when($currencyId !== null, fn ($b) => $b->where('currency_id', $currencyId))
+            ->when($minPrice !== null, fn ($b) => $b->where('price', '>=', $minPrice))
+            ->when($maxPrice !== null, fn ($b) => $b->where('price', '<=', $maxPrice))
+            ->orderByDesc('id');
+
+        $paginator = $builder->paginate($perPage, ['*'], 'page', $page);
 
         $items = collect($paginator->items())
             ->map(fn (EloquentProduct $p) => $this->toDomain($p))
