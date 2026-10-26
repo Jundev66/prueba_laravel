@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Product\Application\Actions\CreateProductAction;
-use App\Modules\Product\Application\DTOs\CreateProductDTO;
+use App\Modules\Product\Application\Create\ProductCreator;
 use App\Modules\Product\Infrastructure\Http\Requests\StoreProductRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use Illuminate\Http\JsonResponse;
@@ -15,7 +14,7 @@ use OpenApi\Attributes as OA;
 final class CreateProductController extends Controller
 {
     public function __construct(
-        private readonly CreateProductAction $action,
+        private readonly ProductCreator $creator,
     ) {
     }
 
@@ -47,8 +46,16 @@ final class CreateProductController extends Controller
     )]
     public function __invoke(StoreProductRequest $request): JsonResponse
     {
-        $dto = CreateProductDTO::fromArray($request->validated());
-        $product = $this->action->execute($dto);
+        $validated = $request->validated();
+
+        $product = ($this->creator)(
+            name: (string) $validated['name'],
+            description: isset($validated['description']) ? (string) $validated['description'] : null,
+            price: (float) $validated['price'],
+            currencyId: (int) $validated['currency_id'],
+            taxCost: (float) $validated['tax_cost'],
+            manufacturingCost: (float) $validated['manufacturing_cost']
+        );
 
         return (new ProductResource($product))
             ->response()

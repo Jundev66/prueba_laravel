@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Product\Application\Actions\UpdateProductAction;
-use App\Modules\Product\Application\DTOs\UpdateProductDTO;
+use App\Modules\Product\Application\Update\ProductUpdater;
 use App\Modules\Product\Infrastructure\Http\Requests\UpdateProductRequest;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use OpenApi\Attributes as OA;
@@ -14,7 +13,7 @@ use OpenApi\Attributes as OA;
 final class UpdateProductController extends Controller
 {
     public function __construct(
-        private readonly UpdateProductAction $action,
+        private readonly ProductUpdater $updater,
     ) {
     }
 
@@ -53,8 +52,17 @@ final class UpdateProductController extends Controller
     )]
     public function __invoke(int $id, UpdateProductRequest $request): ProductResource
     {
-        $dto = UpdateProductDTO::fromArray($request->validated());
-        $product = $this->action->execute($id, $dto);
+        $validated = $request->validated();
+
+        $product = ($this->updater)(
+            id: $id,
+            name: isset($validated['name']) ? (string) $validated['name'] : null,
+            description: array_key_exists('description', $validated) ? ($validated['description'] !== null ? (string) $validated['description'] : null) : null,
+            price: isset($validated['price']) ? (float) $validated['price'] : null,
+            currencyId: isset($validated['currency_id']) ? (int) $validated['currency_id'] : null,
+            taxCost: isset($validated['tax_cost']) ? (float) $validated['tax_cost'] : null,
+            manufacturingCost: isset($validated['manufacturing_cost']) ? (float) $validated['manufacturing_cost'] : null
+        );
 
         return new ProductResource($product);
     }

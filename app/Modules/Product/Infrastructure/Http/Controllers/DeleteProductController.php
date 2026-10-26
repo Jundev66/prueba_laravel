@@ -5,15 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Product\Application\Actions\DeleteProductAction;
-use Illuminate\Http\JsonResponse;
+use App\Modules\Product\Application\Delete\ProductDeleter;
 use Illuminate\Http\Response;
 use OpenApi\Attributes as OA;
 
 final class DeleteProductController extends Controller
 {
     public function __construct(
-        private readonly DeleteProductAction $action,
+        private readonly ProductDeleter $deleter,
     ) {
     }
 
@@ -38,7 +37,7 @@ final class DeleteProductController extends Controller
     )]
     public function __invoke(int $id): Response
     {
-        $this->action->execute($id);
+        ($this->deleter)($id);
 
         return response()->noContent();
     }

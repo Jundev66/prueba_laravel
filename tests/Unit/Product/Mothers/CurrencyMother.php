@@ -4,40 +4,37 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Product\Mothers;
 
-use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency;
+use App\Modules\Currency\Domain\Currency;
 
 final class CurrencyMother
 {
     public static function createUsd(): Currency
     {
-        $currency = new Currency();
-        $currency->id = 1;
-        $currency->name = 'US Dollar';
-        $currency->symbol = '$';
-        $currency->exchange_rate = 1.0000;
-
-        return $currency;
+        return Currency::create(
+            id: 1,
+            name: 'US Dollar',
+            symbol: '$',
+            exchangeRate: 1.0000
+        );
     }
 
     public static function createEur(): Currency
     {
-        $currency = new Currency();
-        $currency->id = 2;
-        $currency->name = 'Euro';
-        $currency->symbol = '€';
-        $currency->exchange_rate = 0.9200;
-
-        return $currency;
+        return Currency::create(
+            id: 2,
+            name: 'Euro',
+            symbol: '€',
+            exchangeRate: 0.9200
+        );
     }
 
     public static function createVes(): Currency
     {
-        $currency = new Currency();
-        $currency->id = 3;
-        $currency->name = 'Bolivar';
-        $currency->symbol = 'Bs.';
-        $currency->exchange_rate = 36.5000;
-
-        return $currency;
+        return Currency::create(
+            id: 3,
+            name: 'Bolivar',
+            symbol: 'Bs.',
+            exchangeRate: 36.5000
+        );
     }
 }

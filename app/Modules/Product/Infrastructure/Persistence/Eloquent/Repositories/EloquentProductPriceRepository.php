@@ -4,39 +4,69 @@ declare(strict_types=1);
 
 namespace App\Modules\Product\Infrastructure\Persistence\Eloquent\Repositories;
 
-use App\Modules\Product\Application\DTOs\AssignProductPriceDTO;
+use App\Modules\Currency\Domain\Currency as DomainCurrency;
+use App\Modules\Product\Domain\ProductPrice as DomainProductPrice;
 use App\Modules\Product\Domain\Repositories\ProductPriceRepositoryInterface;
-use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice;
-use Illuminate\Database\Eloquent\Collection;
+use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice as EloquentProductPrice;
 
 final class EloquentProductPriceRepository implements ProductPriceRepositoryInterface
 {
-    public function getPricesByProductId(int $productId): Collection
+    public function save(DomainProductPrice $price): DomainProductPrice
     {
-        return ProductPrice::query()
-            ->with('currency')
-            ->where('product_id', $productId)
-            ->get();
+        $eloquent = EloquentProductPrice::query()->updateOrCreate(
+            [
+                'product_id' => $price->productId(),
+                'currency_id' => $price->currencyId(),
+            ],
+            [
+                'price' => $price->price(),
+            ]
+        );
+
+        $eloquent->load('currency');
+
+        $currency = $eloquent->currency !== null
+            ? DomainCurrency::fromPrimitives($eloquent->currency->toArray())
+            : null;
+
+        return DomainProductPrice::fromPrimitives($eloquent->toArray(), $currency);
     }
 
-    public function findByProductAndCurrency(int $productId, int $currencyId): ?ProductPrice
+    /**
+     * @return DomainProductPrice[]
+     */
+    public function searchByProduct(int $productId): array
     {
-        return ProductPrice::query()
+        return EloquentProductPrice::query()
+            ->with('currency')
+            ->where('product_id', $productId)
+            ->get()
+            ->map(function (EloquentProductPrice $item): DomainProductPrice {
+                $currency = $item->currency !== null
+                    ? DomainCurrency::fromPrimitives($item->currency->toArray())
+                    : null;
+
+                return DomainProductPrice::fromPrimitives($item->toArray(), $currency);
+            })
+            ->all();
+    }
+
+    public function searchByProductAndCurrency(int $productId, int $currencyId): ?DomainProductPrice
+    {
+        $item = EloquentProductPrice::query()
+            ->with('currency')
             ->where('product_id', $productId)
             ->where('currency_id', $currencyId)
             ->first();
-    }
 
-    public function create(AssignProductPriceDTO $dto): ProductPrice
-    {
-        $price = ProductPrice::query()->create([
-            'product_id' => $dto->productId,
-            'currency_id' => $dto->currencyId,
-            'price' => $dto->price,
-        ]);
+        if ($item === null) {
+            return null;
+        }
 
-        $price->load('currency');
+        $currency = $item->currency !== null
+            ? DomainCurrency::fromPrimitives($item->currency->toArray())
+            : null;
 
-        return $price;
+        return DomainProductPrice::fromPrimitives($item->toArray(), $currency);
     }
 }

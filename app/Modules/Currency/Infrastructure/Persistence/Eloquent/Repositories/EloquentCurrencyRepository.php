@@ -4,24 +4,37 @@ declare(strict_types=1);
 
 namespace App\Modules\Currency\Infrastructure\Persistence\Eloquent\Repositories;
 
+use App\Modules\Currency\Domain\Currency as DomainCurrency;
 use App\Modules\Currency\Domain\Repositories\CurrencyRepositoryInterface;
-use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency;
-use Illuminate\Database\Eloquent\Collection;
+use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency as EloquentCurrency;
 
 final class EloquentCurrencyRepository implements CurrencyRepositoryInterface
 {
-    public function all(): Collection
+    /**
+     * @return DomainCurrency[]
+     */
+    public function searchAll(): array
     {
-        return Currency::query()->orderBy('name')->get();
+        return EloquentCurrency::query()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (EloquentCurrency $c) => DomainCurrency::fromPrimitives($c->toArray()))
+            ->all();
     }
 
-    public function findById(int $id): ?Currency
+    public function search(int $id): ?DomainCurrency
     {
-        return Currency::query()->find($id);
+        $currency = EloquentCurrency::query()->find($id);
+
+        if ($currency === null) {
+            return null;
+        }
+
+        return DomainCurrency::fromPrimitives($currency->toArray());
     }
 
     public function exists(int $id): bool
     {
-        return Currency::query()->where('id', $id)->exists();
+        return EloquentCurrency::query()->where('id', $id)->exists();
     }
 }

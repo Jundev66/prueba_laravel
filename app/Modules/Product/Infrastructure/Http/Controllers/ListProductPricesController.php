@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Product\Application\Actions\ListProductPricesAction;
+use App\Modules\Product\Application\FindPrices\ProductPricesFinder;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductPriceResource;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
 final class ListProductPricesController extends Controller
 {
     public function __construct(
-        private readonly ListProductPricesAction $action,
+        private readonly ProductPricesFinder $finder,
     ) {
     }
 
@@ -38,7 +38,7 @@ final class ListProductPricesController extends Controller
     )]
     public function __invoke(int $id): AnonymousResourceCollection
     {
-        $prices = $this->action->execute($id);
+        $prices = ($this->finder)($id);
 
         return ProductPriceResource::collection($prices);
     }

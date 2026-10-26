@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Product\Application\Actions;
+namespace App\Modules\Product\Application\FindPrices;
 
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
+use App\Modules\Product\Domain\ProductPrice;
 use App\Modules\Product\Domain\Repositories\ProductPriceRepositoryInterface;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
 
-final readonly class ListProductPricesAction
+final readonly class ProductPricesFinder
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,
@@ -17,14 +17,17 @@ final readonly class ListProductPricesAction
     ) {
     }
 
-    public function execute(int $productId): Collection
+    /**
+     * @return ProductPrice[]
+     */
+    public function __invoke(int $productId): array
     {
-        $product = $this->productRepository->findById($productId);
+        $product = $this->productRepository->search($productId);
 
         if ($product === null) {
             throw new ProductNotFoundException($productId);
         }
 
-        return $this->productPriceRepository->getPricesByProductId($productId);
+        return $this->productPriceRepository->searchByProduct($productId);
     }
 }

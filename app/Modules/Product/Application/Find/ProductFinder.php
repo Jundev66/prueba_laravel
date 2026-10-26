@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Modules\Product\Application\Actions;
+namespace App\Modules\Product\Application\Find;
 
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
+use App\Modules\Product\Domain\Product;
 use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
-use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\Product;
 
-final readonly class GetProductAction
+final readonly class ProductFinder
 {
     public function __construct(
         private ProductRepositoryInterface $productRepository,
     ) {
     }
 
-    public function execute(int $id): Product
+    public function __invoke(int $id): Product
     {
-        $product = $this->productRepository->findById($id);
+        $product = $this->productRepository->search($id);
 
         if ($product === null) {
             throw new ProductNotFoundException($id);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Currency\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Currency\Application\Actions\ListCurrenciesAction;
+use App\Modules\Currency\Application\SearchAll\CurrenciesSearcher;
 use App\Modules\Currency\Infrastructure\Http\Resources\CurrencyResource;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use OpenApi\Attributes as OA;
@@ -13,7 +13,7 @@ use OpenApi\Attributes as OA;
 final class ListCurrenciesController extends Controller
 {
     public function __construct(
-        private readonly ListCurrenciesAction $action,
+        private readonly CurrenciesSearcher $searcher,
     ) {
     }
 
@@ -44,7 +44,7 @@ final class ListCurrenciesController extends Controller
     )]
     public function __invoke(): AnonymousResourceCollection
     {
-        $currencies = $this->action->execute();
+        $currencies = ($this->searcher)();
 
         return CurrencyResource::collection($currencies);
     }

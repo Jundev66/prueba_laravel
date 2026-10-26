@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Modules\Currency\Domain\Repositories;
 
-use App\Modules\Currency\Infrastructure\Persistence\Eloquent\Models\Currency;
-use Illuminate\Database\Eloquent\Collection;
+use App\Modules\Currency\Domain\Currency;
 
 interface CurrencyRepositoryInterface
 {
-    public function all(): Collection;
+    /**
+     * @return Currency[]
+     */
+    public function searchAll(): array;
 
-    public function findById(int $id): ?Currency;
+    public function search(int $id): ?Currency;
 
     public function exists(int $id): bool;
 }

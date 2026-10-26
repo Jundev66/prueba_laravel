@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Modules\Product\Infrastructure\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Product\Application\Actions\GetProductAction;
+use App\Modules\Product\Application\Find\ProductFinder;
 use App\Modules\Product\Infrastructure\Http\Resources\ProductResource;
 use OpenApi\Attributes as OA;
 
 final class GetProductController extends Controller
 {
     public function __construct(
-        private readonly GetProductAction $action,
+        private readonly ProductFinder $finder,
     ) {
     }
 
@@ -37,7 +37,7 @@ final class GetProductController extends Controller
     )]
     public function __invoke(int $id): ProductResource
     {
-        $product = $this->action->execute($id);
+        $product = ($this->finder)($id);
 
         return new ProductResource($product);
     }
