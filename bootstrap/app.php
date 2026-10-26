@@ -10,6 +10,7 @@ use App\Modules\Product\Domain\Exceptions\CurrencyAlreadyAssignedException;
 use App\Modules\Product\Domain\Exceptions\InvalidProductAttributeException;
 use App\Modules\Product\Domain\Exceptions\ProductNotFoundException;
 use App\Shared\Infrastructure\Middleware\SecurityHeadersMiddleware;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,6 +31,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        $exceptions->render(function (AuthenticationException $e, Request $request): JsonResponse {
+            return response()->json([
+                'error' => [
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => 'Unauthenticated.',
+                ],
+            ], 401);
+        });
 
         $exceptions->render(function (ProductNotFoundException $e): JsonResponse {
             return response()->json([

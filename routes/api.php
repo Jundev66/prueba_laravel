@@ -14,7 +14,7 @@ use App\Modules\Product\Infrastructure\Http\Controllers\UpdateProductController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
-    Route::post('/auth/login', LoginController::class);
+    Route::post('/auth/login', LoginController::class)->name('login');
 
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function (): void {
         Route::post('/auth/logout', LogoutController::class);
