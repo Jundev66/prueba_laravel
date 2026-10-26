@@ -60,17 +60,27 @@ app/
 
 ## 🚀 Despliegue Rápido con Docker
 
-### 1. Iniciar los Contenedores
+### 1. Clonar el Repositorio y Configurar Variables de Entorno
 ```bash
-docker compose up -d
+git clone https://github.com/Jundev66/prueba_laravel.git
+cd prueba_laravel
+cp .env.example .env
+```
+*(En Windows PowerShell: `copy .env.example .env`).*
+
+### 2. Iniciar Contenedores Docker
+```bash
+docker compose up -d --build
 ```
 Servicios inicializados:
-* `laravel_web`: Servidor Nginx (`http://localhost:8000`).
-* `laravel_app`: PHP 8.4 FPM.
-* `laravel_db`: MySQL 8.0 (Puerto `3306`).
+* `laravel_web`: Servidor Web Nginx (`http://localhost:8000`).
+* `laravel_app`: Contenedor PHP 8.4 FPM.
+* `laravel_db`: Base de datos MySQL 8.0 (Puerto `3306`).
 
-### 2. Ejecutar Migraciones y Datos Semilla
+### 3. Instalar Dependencias, Generar Clave y Ejecutar Migraciones
 ```bash
+docker compose exec app composer install
+docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate --seed
 ```
 
@@ -84,6 +94,12 @@ Esto generará automáticamente:
   * **Email**: `admin@example.com`
   * **Password**: `password123`
   * **Token estático predeterminado**: `1|catalog_access_token`
+
+### 4. Ejecutar la Suite de Pruebas
+```bash
+docker compose exec app php artisan test
+```
+*Ejecutará los 51 tests unitarios y de integración pasando al 100% (166 aserciones).*
 
 ---
 
