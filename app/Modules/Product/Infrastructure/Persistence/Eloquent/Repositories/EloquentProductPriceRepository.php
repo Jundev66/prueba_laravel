@@ -9,31 +9,35 @@ use App\Modules\Product\Domain\ProductPrice as DomainProductPrice;
 use App\Modules\Product\Domain\Repositories\ProductPriceRepositoryInterface;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice as EloquentProductPrice;
 
+use Illuminate\Support\Facades\DB;
+
 final class EloquentProductPriceRepository implements ProductPriceRepositoryInterface
 {
     public function save(DomainProductPrice $price): DomainProductPrice
     {
-        $eloquent = EloquentProductPrice::query()
-            ->where('product_id', $price->productId())
-            ->where('currency_id', $price->currencyId())
-            ->first();
+        return DB::transaction(function () use ($price): DomainProductPrice {
+            $eloquent = EloquentProductPrice::query()
+                ->where('product_id', $price->productId())
+                ->where('currency_id', $price->currencyId())
+                ->first();
 
-        if ($eloquent === null) {
-            $eloquent = new EloquentProductPrice();
-            $eloquent->product_id = $price->productId();
-            $eloquent->currency_id = $price->currencyId();
-        }
+            if ($eloquent === null) {
+                $eloquent = new EloquentProductPrice();
+                $eloquent->product_id = $price->productId();
+                $eloquent->currency_id = $price->currencyId();
+            }
 
-        $eloquent->price = $price->price();
-        $eloquent->save();
+            $eloquent->price = $price->price();
+            $eloquent->save();
 
-        $eloquent->load('currency');
+            $eloquent->load('currency');
 
-        $currency = $eloquent->currency !== null
-            ? DomainCurrency::fromPrimitives($eloquent->currency->toArray())
-            : null;
+            $currency = $eloquent->currency !== null
+                ? DomainCurrency::fromPrimitives($eloquent->currency->toArray())
+                : null;
 
-        return DomainProductPrice::fromPrimitives($eloquent->toArray(), $currency);
+            return DomainProductPrice::fromPrimitives($eloquent->toArray(), $currency);
+        });
     }
 
     /**

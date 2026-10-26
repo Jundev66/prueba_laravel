@@ -11,27 +11,31 @@ use App\Modules\Product\Domain\Repositories\ProductRepositoryInterface;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\Product as EloquentProduct;
 use App\Modules\Product\Infrastructure\Persistence\Eloquent\Models\ProductPrice as EloquentProductPrice;
 
+use Illuminate\Support\Facades\DB;
+
 final class EloquentProductRepository implements ProductRepositoryInterface
 {
     public function save(DomainProduct $product): DomainProduct
     {
-        if ($product->id() !== null) {
-            $eloquent = EloquentProduct::query()->findOrFail($product->id());
-        } else {
-            $eloquent = new EloquentProduct();
-        }
+        return DB::transaction(function () use ($product): DomainProduct {
+            if ($product->id() !== null) {
+                $eloquent = EloquentProduct::query()->findOrFail($product->id());
+            } else {
+                $eloquent = new EloquentProduct();
+            }
 
-        $eloquent->name = $product->name();
-        $eloquent->description = $product->description();
-        $eloquent->price = $product->price();
-        $eloquent->currency_id = $product->currencyId();
-        $eloquent->tax_cost = $product->taxCost();
-        $eloquent->manufacturing_cost = $product->manufacturingCost();
-        $eloquent->save();
+            $eloquent->name = $product->name();
+            $eloquent->description = $product->description();
+            $eloquent->price = $product->price();
+            $eloquent->currency_id = $product->currencyId();
+            $eloquent->tax_cost = $product->taxCost();
+            $eloquent->manufacturing_cost = $product->manufacturingCost();
+            $eloquent->save();
 
-        $eloquent->load(['currency', 'prices.currency']);
+            $eloquent->load(['currency', 'prices.currency']);
 
-        return $this->toDomain($eloquent);
+            return $this->toDomain($eloquent);
+        });
     }
 
     public function search(int $id): ?DomainProduct
@@ -49,13 +53,15 @@ final class EloquentProductRepository implements ProductRepositoryInterface
 
     public function delete(int $id): bool
     {
-        $eloquent = EloquentProduct::query()->find($id);
+        return DB::transaction(function () use ($id): bool {
+            $eloquent = EloquentProduct::query()->find($id);
 
-        if ($eloquent === null) {
-            return false;
-        }
+            if ($eloquent === null) {
+                return false;
+            }
 
-        return (bool) $eloquent->delete();
+            return (bool) $eloquent->delete();
+        });
     }
 
     /**
