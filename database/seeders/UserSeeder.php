@@ -21,8 +21,8 @@ final class UserSeeder extends Seeder
             ]
         );
 
-        $plainToken = 'test-token-backend-senior-2026';
-        $hashedToken = hash('sha256', $plainToken);
+        $rawToken = 'catalog_access_token';
+        $hashedToken = hash('sha256', $rawToken);
 
         DB::table('personal_access_tokens')->updateOrInsert(
             [

@@ -51,6 +51,7 @@ final class ListCurrenciesController extends Controller
                 )
             ),
             new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 422, description: 'Query parameter validation error (e.g. search keyword exceeds 100 characters)'),
         ]
     )]
     public function __invoke(ListCurrenciesRequest $request): AnonymousResourceCollection

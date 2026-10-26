@@ -83,7 +83,7 @@ Esto generará automáticamente:
 * **Usuario Administrador**:
   * **Email**: `admin@example.com`
   * **Password**: `password123`
-  * **Token estático pre-generado**: `test-token-backend-senior-2026`
+  * **Token estático predeterminado**: `1|catalog_access_token`
 
 ---
 
@@ -129,7 +129,7 @@ curl -X GET http://localhost:8000/api/v1/products \
   -H "Accept: application/json"
 ```
 
-*(También puedes utilizar directamente el token pre-configurado de prueba: `test-token-backend-senior-2026`).*
+*(También puedes utilizar directamente el token predeterminado: `1|catalog_access_token`).*
 
 #### 3. Cerrar Sesión y Revocar Token (`POST /api/v1/auth/logout`)
 Invalida el token activo en la base de datos de forma inmediata:
@@ -397,12 +397,16 @@ docker compose exec app php artisan test
 Abre en tu navegador:
 👉 **[http://localhost:8000/api/documentation](http://localhost:8000/api/documentation)**
 
-1. Haz clic en el botón verde **Authorize**.
-2. Ingresa el token:
+**Pasos para autenticarte en Swagger UI**:
+1. Haz clic en el botón verde **Authorize** (con el ícono de candado abierto 🔓) en la esquina superior derecha.
+2. En la ventana modal que se abre (*Available authorizations*), ubica la sección `bearerAuth` y el campo de texto vacío **`Value:`**.
+3. Pega el token directamente allí:
 ```text
-test-token-backend-senior-2026
+1|catalog_access_token
 ```
-3. Podrás interactuar y probar cualquiera de los endpoints directamente desde la interfaz.
+*(Nota: No escribas la palabra `Bearer`, Swagger la añade automáticamente).*
+4. Haz clic en el botón **Authorize** dentro del modal y luego en **Close**. El candado cambiará a cerrado 🔒.
+5. ¡Listo! Cualquier endpoint que pruebes con los botones **"Try it out" ➔ "Execute"** enviará automáticamente el encabezado `Authorization: Bearer <token>`.
 
 ### Colecciones para Postman e Insomnia
 En la carpeta `docs/` encontrarás las definiciones listas para importar:

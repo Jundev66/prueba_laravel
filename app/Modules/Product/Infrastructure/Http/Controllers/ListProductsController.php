@@ -136,6 +136,10 @@ final class ListProductsController extends Controller
                 response: 401,
                 description: 'Unauthenticated'
             ),
+            new OA\Response(
+                response: 422,
+                description: 'Query parameter validation error (e.g. per_page out of range [1-100], invalid currency_id)'
+            ),
         ]
     )]
     public function __invoke(ListProductsRequest $request): JsonResponse
